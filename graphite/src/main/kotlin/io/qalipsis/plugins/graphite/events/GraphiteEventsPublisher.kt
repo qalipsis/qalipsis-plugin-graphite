@@ -32,11 +32,11 @@ import java.lang.UnsupportedOperationException
 @Requires(beans = [GraphiteEventsConfiguration::class])
 internal class GraphiteEventsPublisher(
     @Named(Executors.BACKGROUND_EXECUTOR_NAME) private val coroutineScope: CoroutineScope,
-    private val graphiteEventsConfiguration: GraphiteEventsConfiguration
+    private val configuration: GraphiteEventsConfiguration
 ) : AbstractBufferedEventsPublisher(
-    EventLevel.valueOf(graphiteEventsConfiguration.minLogLevel),
-    graphiteEventsConfiguration.batchFlushIntervalSeconds,
-    graphiteEventsConfiguration.batchSize,
+    EventLevel.valueOf(configuration.minLogLevel),
+    configuration.batchFlushIntervalSeconds,
+    configuration.batchSize,
     coroutineScope
 ) {
 
@@ -52,8 +52,8 @@ internal class GraphiteEventsPublisher(
     }
 
     private fun buildClient() {
-        val host = graphiteEventsConfiguration.host
-        val port = graphiteEventsConfiguration.port
+        val host = configuration.host
+        val port = configuration.port
         val encoder = resolveProtocolEncoder()
         workerGroup = NioEventLoopGroup()
 
@@ -65,13 +65,13 @@ internal class GraphiteEventsPublisher(
                 override fun initChannel(ch: SocketChannel) {
                     ch.pipeline().addLast(
                         encoder,
-                        GraphiteClientHandler(metricsBuffer, graphiteEventsConfiguration, coroutineScope)
+                        GraphiteClientHandler(metricsBuffer, configuration, coroutineScope)
                     )
                 }
             }).option(ChannelOption.SO_KEEPALIVE, true)
             channelFuture = b.connect(host, port).sync()
             startUpdateKeepAliveTask()
-            log.info { "Graphite connection established. Host: " + graphiteEventsConfiguration.host + ", port: " + graphiteEventsConfiguration.port + ", protocol: " + graphiteEventsConfiguration.protocol }
+            log.info { "Graphite connection established. Host: " + configuration.host + ", port: " + configuration.port + ", protocol: " + configuration.protocol }
         } catch (e: Exception) {
             // reconnect
             log.warn { "Graphite connection was lost due to: " + e.message }
@@ -105,10 +105,10 @@ internal class GraphiteEventsPublisher(
         metricsBuffer.addAll(values)
     }
 
-    private fun resolveProtocolEncoder() = when (graphiteEventsConfiguration.protocol) {
+    private fun resolveProtocolEncoder() = when (configuration.protocol) {
         GraphiteProtocolType.plaintext.name -> GraphitePlaintextEncoder()
         GraphiteProtocolType.pickle.name -> GraphitePickleEncoder()
-        else -> throw UnsupportedOperationException("Unknown graphite protocol: " + graphiteEventsConfiguration.protocol)
+        else -> throw UnsupportedOperationException("Unknown graphite protocol: " + configuration.protocol)
     }
 
     companion object {

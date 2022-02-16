@@ -15,7 +15,7 @@ import java.lang.UnsupportedOperationException
  */
 internal class GraphiteClientHandler(
     val metricsBuffer: EventsBuffer,
-    val graphiteEventsConfiguration: GraphiteEventsConfiguration,
+    val configuration: GraphiteEventsConfiguration,
     val coroutineScope: CoroutineScope
 ) : ChannelInboundHandlerAdapter() {
 
@@ -26,12 +26,12 @@ internal class GraphiteClientHandler(
     }
 
     private fun writeFromBuffer(ctx: ChannelHandlerContext) {
-        log.info { "Graphite reading from buffer started. Protocol: " + graphiteEventsConfiguration.protocol }
-        if (graphiteEventsConfiguration.protocol == GraphiteProtocolType.pickle.name) {
+        log.info { "Graphite reading from buffer started. Protocol: " + configuration.protocol }
+        if (configuration.protocol == GraphiteProtocolType.pickle.name) {
             while (true) {
                 writePickle(ctx)
             }
-        } else if (graphiteEventsConfiguration.protocol == GraphiteProtocolType.plaintext.name) {
+        } else if (configuration.protocol == GraphiteProtocolType.plaintext.name) {
             while (true) {
                 writePlaintext(ctx)
             }
@@ -44,14 +44,14 @@ internal class GraphiteClientHandler(
         if (metricsBuffer.size() > 0) {
             ctx.writeAndFlush(metricsBuffer.copyAndClear())
         }
-        Thread.sleep(graphiteEventsConfiguration.batchFlushIntervalSeconds.seconds * 1000)
+        Thread.sleep(configuration.batchFlushIntervalSeconds.seconds * 1000)
     }
 
     private fun writePlaintext(ctx: ChannelHandlerContext) {
         while (metricsBuffer.size() > 0) {
             ctx.writeAndFlush(metricsBuffer.poll())
         }
-        Thread.sleep(graphiteEventsConfiguration.batchFlushIntervalSeconds.seconds * 1000)
+        Thread.sleep(configuration.batchFlushIntervalSeconds.seconds * 1000)
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {

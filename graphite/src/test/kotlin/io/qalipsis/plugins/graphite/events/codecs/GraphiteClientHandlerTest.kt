@@ -28,7 +28,7 @@ import java.time.Duration
 internal class GraphiteClientHandlerTest {
 
     @Inject
-    private lateinit var graphiteEventsConfiguration: GraphiteEventsConfiguration
+    private lateinit var configuration: GraphiteEventsConfiguration
 
     @RelaxedMockK
     private lateinit var ctx: ChannelHandlerContext
@@ -39,7 +39,7 @@ internal class GraphiteClientHandlerTest {
     fun `should not write to buffer`() {
         //given
         val eventsBuffer = EventsBuffer()
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, graphiteEventsConfiguration, coroutineScope)
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
@@ -57,7 +57,7 @@ internal class GraphiteClientHandlerTest {
         //given
         val eventsBuffer = EventsBuffer()
         eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG)))
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, graphiteEventsConfiguration, coroutineScope)
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
@@ -75,7 +75,7 @@ internal class GraphiteClientHandlerTest {
         //given
         val eventsBuffer = EventsBuffer()
         eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, graphiteEventsConfiguration, coroutineScope)
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
@@ -93,11 +93,11 @@ internal class GraphiteClientHandlerTest {
         //given
         val eventsBuffer = EventsBuffer()
         eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG)))
-        val eventsConfiguration = object: GraphiteEventsConfiguration{
+        val configuration = object: GraphiteEventsConfiguration{
             override val host: String
-                get() = graphiteEventsConfiguration.host
+                get() = configuration.host
             override val port: Int
-                get() = graphiteEventsConfiguration.port
+                get() = configuration.port
             override val protocol: String
                 get() = GraphiteProtocolType.plaintext.name
             override val batchSize: Int
@@ -107,7 +107,7 @@ internal class GraphiteClientHandlerTest {
             override val minLogLevel: String
                 get() = "INFO"
         }
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, eventsConfiguration,
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration,
             coroutineScope)
 
         //when
@@ -126,11 +126,11 @@ internal class GraphiteClientHandlerTest {
         //given
         val eventsBuffer = EventsBuffer()
         eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
-        val eventsConfiguration = object: GraphiteEventsConfiguration{
+        val configuration = object: GraphiteEventsConfiguration{
             override val host: String
-                get() = graphiteEventsConfiguration.host
+                get() = configuration.host
             override val port: Int
-                get() = graphiteEventsConfiguration.port
+                get() = configuration.port
             override val protocol: String
                 get() = GraphiteProtocolType.plaintext.name
             override val batchSize: Int
@@ -140,7 +140,7 @@ internal class GraphiteClientHandlerTest {
             override val minLogLevel: String
                 get() = "INFO"
         }
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, eventsConfiguration,
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration,
             coroutineScope)
 
         //when
