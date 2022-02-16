@@ -12,6 +12,7 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.qalipsis.api.Executors
 import io.qalipsis.api.events.AbstractBufferedEventsPublisher
 import io.qalipsis.api.events.Event
+import io.qalipsis.api.events.EventLevel
 import io.qalipsis.plugins.graphite.events.codecs.GraphiteClientHandler
 import io.qalipsis.plugins.graphite.events.codecs.GraphitePickleEncoder
 import io.qalipsis.plugins.graphite.events.codecs.GraphitePlaintextEncoder
@@ -34,7 +35,7 @@ class GraphiteEventsPublisher(
     @Named(Executors.BACKGROUND_EXECUTOR_NAME) private val coroutineScope: CoroutineScope,
     private val graphiteEventsConfiguration: GraphiteEventsConfiguration
 ) : AbstractBufferedEventsPublisher(
-    graphiteEventsConfiguration.minLevel,
+    EventLevel.valueOf(graphiteEventsConfiguration.minLogLevel),
     Duration.ofSeconds(graphiteEventsConfiguration.batchFlushIntervalSeconds),
     graphiteEventsConfiguration.batchSize,
     coroutineScope
@@ -52,8 +53,8 @@ class GraphiteEventsPublisher(
     }
 
     private fun buildClient() {
-        val host = graphiteEventsConfiguration.graphiteHost
-        val port = graphiteEventsConfiguration.graphitePort
+        val host = graphiteEventsConfiguration.host
+        val port = graphiteEventsConfiguration.port
         val encoder = resolveProtocolEncoder()
         workerGroup = NioEventLoopGroup()
 
@@ -71,7 +72,7 @@ class GraphiteEventsPublisher(
             }).option(ChannelOption.SO_KEEPALIVE, true)
             channelFuture = b.connect(host, port).sync()
             startUpdateKeepAliveTask()
-            log.info { "Graphite connection established. Host: " + graphiteEventsConfiguration.graphiteHost + ", port: " + graphiteEventsConfiguration.graphitePort + ", protocol: " + graphiteEventsConfiguration.protocol }
+            log.info { "Graphite connection established. Host: " + graphiteEventsConfiguration.host + ", port: " + graphiteEventsConfiguration.port + ", protocol: " + graphiteEventsConfiguration.protocol }
         } catch (e: Exception) {
             // reconnect
             log.warn { "Graphite connection was lost due to: " + e.message }

@@ -84,13 +84,21 @@ abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: Grap
         protocolPort =
             if(protocol == GraphiteProtocolType.pickle) container.getMappedPort(GRAPHITE_PICKLE_PORT)
             else container.getMappedPort(GRAPHITE_PLAINTEXT_PORT)
-
-        graphiteEventsConfiguration = GraphiteEventsConfiguration(
-            "$LOCALHOST_HOST",
-            protocolPort,
-            protocol.name,
-            1,
-            1)
+        val protocolName = protocol.name
+        graphiteEventsConfiguration = object: GraphiteEventsConfiguration{
+            override val host: String
+                get() = "$LOCALHOST_HOST"
+            override val port: Int
+                get() = protocolPort
+            override val protocol: String
+                get() = protocolName
+            override val batchSize: Int
+                get() = 1
+            override val batchFlushIntervalSeconds: Long
+                get() = 1
+            override val minLogLevel: String
+                get() = "INFO"
+        }
 
         graphiteEventsPublisher = GraphiteEventsPublisher(
             coroutineScope,
@@ -106,7 +114,7 @@ abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: Grap
         val key = "my.test.path$protocol"
         val event = Event(key, EventLevel.INFO, emptyList(), 123)
 
-        val request = generateHttpGet("http://${graphiteEventsConfiguration.graphiteHost}:${containerHttpPort}/render?target=$key&format=json")
+        val request = generateHttpGet("http://${graphiteEventsConfiguration.host}:${containerHttpPort}/render?target=$key&format=json")
 
         //when
         async {
@@ -133,7 +141,7 @@ abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: Grap
 
         //then
         for(key in keys) {
-            val request = generateHttpGet("http://${graphiteEventsConfiguration.graphiteHost}:${containerHttpPort}/render?target=$key&format=json")
+            val request = generateHttpGet("http://${graphiteEventsConfiguration.host}:${containerHttpPort}/render?target=$key&format=json")
 
             while(!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
                 Thread.sleep(200)
@@ -155,7 +163,7 @@ abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: Grap
 
         //then
         for(key in keys) {
-            val request = generateHttpGet("http://${graphiteEventsConfiguration.graphiteHost}:${containerHttpPort}/render?target=$key&format=json")
+            val request = generateHttpGet("http://${graphiteEventsConfiguration.host}:${containerHttpPort}/render?target=$key&format=json")
 
             while(!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
                 Thread.sleep(200)
@@ -171,7 +179,7 @@ abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: Grap
         val event = Event(key, EventLevel.INFO, listOf(EventTag("a", "1"), EventTag("b", "2")), 123.123)
 
         val url = StringBuilder()
-        url.append("http://${graphiteEventsConfiguration.graphiteHost}:${containerHttpPort}/render?target=$key")
+        url.append("http://${graphiteEventsConfiguration.host}:${containerHttpPort}/render?target=$key")
         for(tag in event.tags) {
             url.append(";")
             url.append(tag.key)
@@ -199,7 +207,7 @@ abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: Grap
         val key = "fakekey$protocol"
         val event = Event(key, EventLevel.TRACE, emptyList(), 123.123)
 
-        val request = generateHttpGet("http://${graphiteEventsConfiguration.graphiteHost}:${containerHttpPort}/render?target=$key&format=json")
+        val request = generateHttpGet("http://${graphiteEventsConfiguration.host}:${containerHttpPort}/render?target=$key&format=json")
 
         //when
         graphiteEventsPublisher.publish(event)

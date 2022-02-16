@@ -92,7 +92,21 @@ class GraphiteClientHandlerTest {
         //given
         val eventsBuffer = EventsBuffer()
         eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG)))
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, GraphiteEventsConfiguration(graphiteHost = graphiteEventsConfiguration.graphiteHost, graphitePort = graphiteEventsConfiguration.graphitePort, protocol = GraphiteProtocolType.plaintext.name, batchSize = graphiteEventsConfiguration.batchSize, batchFlushIntervalSeconds = graphiteEventsConfiguration.batchFlushIntervalSeconds),
+        val eventsConfiguration = object: GraphiteEventsConfiguration{
+            override val host: String
+                get() = graphiteEventsConfiguration.host
+            override val port: Int
+                get() = graphiteEventsConfiguration.port
+            override val protocol: String
+                get() = GraphiteProtocolType.plaintext.name
+            override val batchSize: Int
+                get() = 1
+            override val batchFlushIntervalSeconds: Long
+                get() = 1
+            override val minLogLevel: String
+                get() = "INFO"
+        }
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, eventsConfiguration,
             coroutineScope)
 
         //when
@@ -111,7 +125,21 @@ class GraphiteClientHandlerTest {
         //given
         val eventsBuffer = EventsBuffer()
         eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, GraphiteEventsConfiguration(graphiteHost = graphiteEventsConfiguration.graphiteHost, graphitePort = graphiteEventsConfiguration.graphitePort, protocol = GraphiteProtocolType.plaintext.name, batchSize = graphiteEventsConfiguration.batchSize, batchFlushIntervalSeconds = graphiteEventsConfiguration.batchFlushIntervalSeconds),
+        val eventsConfiguration = object: GraphiteEventsConfiguration{
+            override val host: String
+                get() = graphiteEventsConfiguration.host
+            override val port: Int
+                get() = graphiteEventsConfiguration.port
+            override val protocol: String
+                get() = GraphiteProtocolType.plaintext.name
+            override val batchSize: Int
+                get() = 1
+            override val batchFlushIntervalSeconds: Long
+                get() = 1
+            override val minLogLevel: String
+                get() = "INFO"
+        }
+        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, eventsConfiguration,
             coroutineScope)
 
         //when

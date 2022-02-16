@@ -9,3 +9,4 @@ metrics:
     protocol: pickle
     batch-size: 2
     batch-flush-interval-seconds: 10
+    min-log-level: INFO
