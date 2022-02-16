@@ -5,7 +5,7 @@ import io.qalipsis.api.events.Event
 /**
  * @author rklymenko
  */
-class EventsBuffer {
+internal class EventsBuffer {
 
     private val dataBuffer: MutableList<Event> = mutableListOf()
 

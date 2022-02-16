@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
  */
 @MicronautTest
 @WithMockk
-class GraphitePickleEncoderTest {
+internal class GraphitePickleEncoderTest {
 
     @RelaxedMockK
     private lateinit var ctx: ChannelHandlerContext

@@ -13,7 +13,7 @@ import java.lang.UnsupportedOperationException
 /**
  * @author rklymenko
  */
-class GraphiteClientHandler(
+internal class GraphiteClientHandler(
     val metricsBuffer: EventsBuffer,
     val graphiteEventsConfiguration: GraphiteEventsConfiguration,
     val coroutineScope: CoroutineScope

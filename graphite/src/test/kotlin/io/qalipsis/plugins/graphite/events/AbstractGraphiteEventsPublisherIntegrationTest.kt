@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
  */
 @Testcontainers
 @Timeout(3, unit = TimeUnit.MINUTES)
-abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: GraphiteProtocolType) {
+internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: GraphiteProtocolType) {
 
     @JvmField
     @RegisterExtension

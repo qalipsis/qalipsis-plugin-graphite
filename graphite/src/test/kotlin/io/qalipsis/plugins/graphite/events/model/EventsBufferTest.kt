@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 /**
  * @author rklymenko
  */
-class EventsBufferTest {
+internal class EventsBufferTest {
 
     @Test
     fun `should add and poll single event`() {

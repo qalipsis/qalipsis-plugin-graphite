@@ -24,7 +24,7 @@ import io.qalipsis.test.mockk.coVerifyOnce
  */
 @MicronautTest
 @WithMockk
-class GraphiteClientHandlerTest {
+internal class GraphiteClientHandlerTest {
 
     @Inject
     private lateinit var graphiteEventsConfiguration: GraphiteEventsConfiguration

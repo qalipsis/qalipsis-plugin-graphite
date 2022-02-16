@@ -9,7 +9,7 @@ import mu.KotlinLogging
 /**
  * @author rklymenko
  */
-class GraphitePlaintextEncoder : MessageToByteEncoder<List<Event>>() {
+internal class GraphitePlaintextEncoder : MessageToByteEncoder<List<Event>>() {
 
     private val SEMICOLON = ";"
     private val EQ = "="

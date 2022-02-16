@@ -8,7 +8,7 @@ import io.micronaut.context.annotation.Requires
  */
 @Requires(property = "metrics.graphite.enabled", value = "true")
 @ConfigurationProperties("metrics.graphite")
-interface GraphiteEventsConfiguration {
+internal interface GraphiteEventsConfiguration {
     val host: String
     val port: Int
     val protocol: String

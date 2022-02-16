@@ -20,7 +20,7 @@ import org.junit.Assert
  */
 @MicronautTest
 @WithMockk
-class GraphitePlaintextEncoderTest {
+internal class GraphitePlaintextEncoderTest {
 
     @RelaxedMockK
     private lateinit var ctx: ChannelHandlerContext

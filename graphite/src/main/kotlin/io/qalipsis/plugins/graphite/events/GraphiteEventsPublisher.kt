@@ -31,7 +31,7 @@ import java.time.Duration
  */
 @Singleton
 @Requires(beans = [GraphiteEventsConfiguration::class])
-class GraphiteEventsPublisher(
+internal class GraphiteEventsPublisher(
     @Named(Executors.BACKGROUND_EXECUTOR_NAME) private val coroutineScope: CoroutineScope,
     private val graphiteEventsConfiguration: GraphiteEventsConfiguration
 ) : AbstractBufferedEventsPublisher(
