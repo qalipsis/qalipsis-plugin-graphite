@@ -19,10 +19,12 @@ internal class GraphitePlaintextEncoder : MessageToByteEncoder<List<Event>>() {
         events: List<Event>, out: ByteBuf
     ) {
         log.info { "Encoding events: " + events }
-        out.writeBytes(generatePayload(events[0]).toByteArray())
+        events.forEach {
+            out.writeBytes(generatePayload(it).toByteArray())
+        }
         ctx.writeAndFlush(out)
-        log.info { "Events flushed: " + events }
         out.retain()
+        log.info { "Events flushed: " + events }
     }
 
     private fun generatePayload(event: Event): String {

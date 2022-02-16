@@ -1,12 +1,10 @@
 package io.qalipsis.plugins.graphite.events.codecs
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
+import io.mockk.coVerify
 import io.mockk.confirmVerified
 import io.netty.channel.ChannelHandlerContext
-import io.qalipsis.plugins.graphite.events.GraphiteEventsConfiguration
-import io.qalipsis.plugins.graphite.events.model.EventsBuffer
 import io.qalipsis.test.mockk.WithMockk
-import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -14,11 +12,11 @@ import org.junit.jupiter.api.Test
 import io.mockk.impl.annotations.RelaxedMockK
 import io.qalipsis.api.events.Event
 import io.qalipsis.api.events.EventLevel
-import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
 import io.qalipsis.test.mockk.coVerifyExactly
 import io.qalipsis.test.mockk.coVerifyNever
 import io.qalipsis.test.mockk.coVerifyOnce
-import java.time.Duration
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 
 /**
  * @author rklymenko
@@ -26,9 +24,6 @@ import java.time.Duration
 @MicronautTest
 @WithMockk
 internal class GraphiteClientHandlerTest {
-
-    @Inject
-    private lateinit var configuration: GraphiteEventsConfiguration
 
     @RelaxedMockK
     private lateinit var ctx: ChannelHandlerContext
@@ -38,14 +33,17 @@ internal class GraphiteClientHandlerTest {
     @Test
     fun `should not write to buffer`() {
         //given
-        val eventsBuffer = EventsBuffer()
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration, coroutineScope)
+        val eventChannel = Channel<List<Event>>()
+        val graphiteClientHandler = GraphiteClientHandler(eventChannel, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
         Thread.sleep(1_000)
 
         //then
+        coVerify {
+            ctx.isRemoved
+        }
         coVerifyNever {
             ctx.writeAndFlush(any())
         }
@@ -55,15 +53,20 @@ internal class GraphiteClientHandlerTest {
     @Test
     fun `should write to buffer single entity using pickle protocol`() {
         //given
-        val eventsBuffer = EventsBuffer()
-        eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG)))
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration, coroutineScope)
+        val eventChannel = Channel<List<Event>>()
+        coroutineScope.launch {
+            eventChannel.send(listOf(Event("boo", EventLevel.DEBUG)))
+        }
+        val graphiteClientHandler = GraphiteClientHandler(eventChannel, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
         Thread.sleep(1_000)
 
         //then
+        coVerify {
+            ctx.isRemoved
+        }
         coVerifyOnce {
             ctx.writeAndFlush(any())
         }
@@ -73,15 +76,20 @@ internal class GraphiteClientHandlerTest {
     @Test
     fun `should write to buffer multiple entities using pickle protocol`() {
         //given
-        val eventsBuffer = EventsBuffer()
-        eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration, coroutineScope)
+        val eventChannel = Channel<List<Event>>()
+        coroutineScope.launch {
+            eventChannel.send(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
+        }
+        val graphiteClientHandler = GraphiteClientHandler(eventChannel, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
         Thread.sleep(1_000)
 
         //then
+        coVerify {
+            ctx.isRemoved
+        }
         coVerifyOnce {
             ctx.writeAndFlush(any())
         }
@@ -91,30 +99,20 @@ internal class GraphiteClientHandlerTest {
     @Test
     fun `should write to buffer single entity using plaintext protocol`() {
         //given
-        val eventsBuffer = EventsBuffer()
-        eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG)))
-        val configuration = object: GraphiteEventsConfiguration{
-            override val host: String
-                get() = configuration.host
-            override val port: Int
-                get() = configuration.port
-            override val protocol: String
-                get() = GraphiteProtocolType.plaintext.name
-            override val batchSize: Int
-                get() = 1
-            override val batchFlushIntervalSeconds: Duration
-                get() = Duration.ofSeconds(1)
-            override val minLogLevel: String
-                get() = "INFO"
+        val eventChannel = Channel<List<Event>>()
+        coroutineScope.launch {
+            eventChannel.send(listOf(Event("boo", EventLevel.DEBUG)))
         }
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration,
-            coroutineScope)
+        val graphiteClientHandler = GraphiteClientHandler(eventChannel, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
         Thread.sleep(1_000)
 
         //then
+        coVerify {
+            ctx.isRemoved
+        }
         coVerifyOnce {
             ctx.writeAndFlush(any())
         }
@@ -124,31 +122,21 @@ internal class GraphiteClientHandlerTest {
     @Test
     fun `should write to buffer multiple entities using plaintext protocol`() {
         //given
-        val eventsBuffer = EventsBuffer()
-        eventsBuffer.addAll(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
-        val configuration = object: GraphiteEventsConfiguration{
-            override val host: String
-                get() = configuration.host
-            override val port: Int
-                get() = configuration.port
-            override val protocol: String
-                get() = GraphiteProtocolType.plaintext.name
-            override val batchSize: Int
-                get() = 1
-            override val batchFlushIntervalSeconds: Duration
-                get() = Duration.ofSeconds(1)
-            override val minLogLevel: String
-                get() = "INFO"
+        val eventChannel = Channel<List<Event>>()
+        coroutineScope.launch {
+            eventChannel.send(listOf(Event("boo", EventLevel.DEBUG), Event("boo2", EventLevel.DEBUG)))
         }
-        val graphiteClientHandler = GraphiteClientHandler(eventsBuffer, configuration,
-            coroutineScope)
+        val graphiteClientHandler = GraphiteClientHandler(eventChannel, coroutineScope)
 
         //when
         graphiteClientHandler.channelActive(ctx)
         Thread.sleep(2_000)
 
         //then
-        coVerifyExactly(2) {
+        coVerify {
+            ctx.isRemoved
+        }
+        coVerifyExactly(1) {
             ctx.writeAndFlush(any())
         }
         confirmVerified(ctx)

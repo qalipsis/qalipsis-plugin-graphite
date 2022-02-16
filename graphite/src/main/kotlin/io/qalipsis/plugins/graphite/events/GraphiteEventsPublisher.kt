@@ -17,10 +17,10 @@ import io.qalipsis.plugins.graphite.events.codecs.GraphiteClientHandler
 import io.qalipsis.plugins.graphite.events.codecs.GraphitePickleEncoder
 import io.qalipsis.plugins.graphite.events.codecs.GraphitePlaintextEncoder
 import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
-import io.qalipsis.plugins.graphite.events.model.EventsBuffer
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.lang.UnsupportedOperationException
@@ -40,7 +40,7 @@ internal class GraphiteEventsPublisher(
     coroutineScope
 ) {
 
-    private val metricsBuffer = EventsBuffer()
+    private val eventChannel = Channel<List<Event>>()
 
     private lateinit var workerGroup: EventLoopGroup
 
@@ -65,7 +65,7 @@ internal class GraphiteEventsPublisher(
                 override fun initChannel(ch: SocketChannel) {
                     ch.pipeline().addLast(
                         encoder,
-                        GraphiteClientHandler(metricsBuffer, configuration, coroutineScope)
+                        GraphiteClientHandler(eventChannel, coroutineScope)
                     )
                 }
             }).option(ChannelOption.SO_KEEPALIVE, true)
@@ -73,9 +73,8 @@ internal class GraphiteEventsPublisher(
             startUpdateKeepAliveTask()
             log.info { "Graphite connection established. Host: " + configuration.host + ", port: " + configuration.port + ", protocol: " + configuration.protocol }
         } catch (e: Exception) {
-            // reconnect
             log.warn { "Graphite connection was lost due to: " + e.message }
-            buildClient()
+            throw RuntimeException(e)
         }
     }
 
@@ -87,22 +86,17 @@ internal class GraphiteEventsPublisher(
                     channelFuture.channel().writeAndFlush("")
                 }
             }
-
-
         }
     }
 
     override fun stop() {
         super.stop()
-        val shotdownFuture = workerGroup?.shutdownGracefully()
-        while (!shotdownFuture.isDone) {
-            Thread.sleep(200)
-        }
-        metricsBuffer.copyAndClear()
+        eventChannel.close()
+        workerGroup?.shutdownGracefully()
     }
 
     override suspend fun publish(values: List<Event>) {
-        metricsBuffer.addAll(values)
+        eventChannel.send(values)
     }
 
     private fun resolveProtocolEncoder() = when (configuration.protocol) {
