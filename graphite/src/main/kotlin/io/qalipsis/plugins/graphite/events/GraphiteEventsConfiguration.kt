@@ -2,6 +2,7 @@ package io.qalipsis.plugins.graphite.events
 
 import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.Requires
+import java.time.Duration
 
 /**
  * @author rklymenko
@@ -13,6 +14,6 @@ internal interface GraphiteEventsConfiguration {
     val port: Int
     val protocol: String
     val batchSize: Int
-    val batchFlushIntervalSeconds: Long
+    val batchFlushIntervalSeconds: Duration
     val minLogLevel: String
 }

@@ -24,7 +24,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.lang.UnsupportedOperationException
-import java.time.Duration
 
 /**
  *
@@ -36,7 +35,7 @@ internal class GraphiteEventsPublisher(
     private val graphiteEventsConfiguration: GraphiteEventsConfiguration
 ) : AbstractBufferedEventsPublisher(
     EventLevel.valueOf(graphiteEventsConfiguration.minLogLevel),
-    Duration.ofSeconds(graphiteEventsConfiguration.batchFlushIntervalSeconds),
+    graphiteEventsConfiguration.batchFlushIntervalSeconds,
     graphiteEventsConfiguration.batchSize,
     coroutineScope
 ) {

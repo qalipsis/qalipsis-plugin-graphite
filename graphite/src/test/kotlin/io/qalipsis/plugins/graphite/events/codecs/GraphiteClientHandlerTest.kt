@@ -18,6 +18,7 @@ import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
 import io.qalipsis.test.mockk.coVerifyExactly
 import io.qalipsis.test.mockk.coVerifyNever
 import io.qalipsis.test.mockk.coVerifyOnce
+import java.time.Duration
 
 /**
  * @author rklymenko
@@ -101,8 +102,8 @@ internal class GraphiteClientHandlerTest {
                 get() = GraphiteProtocolType.plaintext.name
             override val batchSize: Int
                 get() = 1
-            override val batchFlushIntervalSeconds: Long
-                get() = 1
+            override val batchFlushIntervalSeconds: Duration
+                get() = Duration.ofSeconds(1)
             override val minLogLevel: String
                 get() = "INFO"
         }
@@ -134,8 +135,8 @@ internal class GraphiteClientHandlerTest {
                 get() = GraphiteProtocolType.plaintext.name
             override val batchSize: Int
                 get() = 1
-            override val batchFlushIntervalSeconds: Long
-                get() = 1
+            override val batchFlushIntervalSeconds: Duration
+                get() = Duration.ofSeconds(1)
             override val minLogLevel: String
                 get() = "INFO"
         }

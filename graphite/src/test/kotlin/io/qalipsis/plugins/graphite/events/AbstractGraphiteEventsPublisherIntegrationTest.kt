@@ -94,8 +94,8 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
                 get() = protocolName
             override val batchSize: Int
                 get() = 1
-            override val batchFlushIntervalSeconds: Long
-                get() = 1
+            override val batchFlushIntervalSeconds: Duration
+                get() = Duration.ofSeconds(1)
             override val minLogLevel: String
                 get() = "INFO"
         }

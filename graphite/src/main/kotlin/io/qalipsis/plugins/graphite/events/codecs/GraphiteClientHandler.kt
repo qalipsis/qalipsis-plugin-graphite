@@ -44,14 +44,14 @@ internal class GraphiteClientHandler(
         if (metricsBuffer.size() > 0) {
             ctx.writeAndFlush(metricsBuffer.copyAndClear())
         }
-        Thread.sleep(graphiteEventsConfiguration.batchFlushIntervalSeconds * 1000)
+        Thread.sleep(graphiteEventsConfiguration.batchFlushIntervalSeconds.seconds * 1000)
     }
 
     private fun writePlaintext(ctx: ChannelHandlerContext) {
         while (metricsBuffer.size() > 0) {
             ctx.writeAndFlush(metricsBuffer.poll())
         }
-        Thread.sleep(graphiteEventsConfiguration.batchFlushIntervalSeconds * 1000)
+        Thread.sleep(graphiteEventsConfiguration.batchFlushIntervalSeconds.seconds * 1000)
     }
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
