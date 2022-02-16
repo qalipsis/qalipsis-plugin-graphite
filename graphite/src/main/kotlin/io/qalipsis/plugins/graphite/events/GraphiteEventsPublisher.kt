@@ -32,7 +32,8 @@ import java.lang.UnsupportedOperationException
 @Requires(beans = [GraphiteEventsConfiguration::class])
 internal class GraphiteEventsPublisher(
     @Named(Executors.BACKGROUND_EXECUTOR_NAME) private val coroutineScope: CoroutineScope,
-    private val configuration: GraphiteEventsConfiguration
+    private val configuration: GraphiteEventsConfiguration,
+    private val amountOfClients: Int
 ) : AbstractBufferedEventsPublisher(
     EventLevel.valueOf(configuration.minLogLevel),
     configuration.batchFlushIntervalSeconds,
@@ -40,24 +41,25 @@ internal class GraphiteEventsPublisher(
     coroutineScope
 ) {
 
-    private val eventChannel = Channel<List<Event>>()
-
+    private val graphiteClients = List(amountOfClients) { GraphiteClient() }
+    private val graphiteClientsLoadBalancer = GraphiteClientRoundRobinLoadBalancer(graphiteClients)
     private lateinit var workerGroup: EventLoopGroup
 
-    private lateinit var channelFuture: ChannelFuture
-
     override fun start() {
-        buildClient()
+        buildClients()
         super.start()
     }
 
-    private fun buildClient() {
-        val host = configuration.host
-        val port = configuration.port
-        val encoder = resolveProtocolEncoder()
-        workerGroup = NioEventLoopGroup()
+    private fun buildClients() {
+        workerGroup = NioEventLoopGroup(amountOfClients)
+        graphiteClients.forEach {
+            buildClient(it)
+        }
+    }
 
+    private fun buildClient(graphiteClient: GraphiteClient) {
         try {
+            val encoder = resolveProtocolEncoder()
             val b = Bootstrap()
             b.group(workerGroup)
             b.channel(NioSocketChannel::class.java).option(ChannelOption.SO_KEEPALIVE, true)
@@ -65,12 +67,12 @@ internal class GraphiteEventsPublisher(
                 override fun initChannel(ch: SocketChannel) {
                     ch.pipeline().addLast(
                         encoder,
-                        GraphiteClientHandler(eventChannel, coroutineScope)
+                        GraphiteClientHandler(graphiteClient.eventChannel, coroutineScope)
                     )
                 }
             }).option(ChannelOption.SO_KEEPALIVE, true)
-            channelFuture = b.connect(host, port).sync()
-            startUpdateKeepAliveTask()
+            graphiteClient.channelFuture = b.connect(configuration.host, configuration.port).sync()
+            startUpdateKeepAliveTask(graphiteClient)
             log.info { "Graphite connection established. Host: " + configuration.host + ", port: " + configuration.port + ", protocol: " + configuration.protocol }
         } catch (e: Exception) {
             log.warn { "Graphite connection was lost due to: " + e.message }
@@ -78,12 +80,12 @@ internal class GraphiteEventsPublisher(
         }
     }
 
-    fun startUpdateKeepAliveTask() {
+    private fun startUpdateKeepAliveTask(graphiteClient: GraphiteClient) {
         coroutineScope.launch {
-            while(true) {
+            while(!graphiteClient.channelFuture.isDone) {
                 Thread.sleep(KEEP_ALIVE_UPDATE_MS)
-                if(channelFuture.isSuccess) {
-                    channelFuture.channel().writeAndFlush("")
+                if(graphiteClient.channelFuture.isSuccess) {
+                    graphiteClient.channelFuture.channel().writeAndFlush("")
                 }
             }
         }
@@ -91,12 +93,14 @@ internal class GraphiteEventsPublisher(
 
     override fun stop() {
         super.stop()
-        eventChannel.close()
+        graphiteClients.forEach {
+            it.eventChannel.close()
+        }
         workerGroup?.shutdownGracefully()
     }
 
     override suspend fun publish(values: List<Event>) {
-        eventChannel.send(values)
+        graphiteClientsLoadBalancer.send(values)
     }
 
     private fun resolveProtocolEncoder() = when (configuration.protocol) {
@@ -111,4 +115,20 @@ internal class GraphiteEventsPublisher(
         private val KEEP_ALIVE_UPDATE_MS = 10_000L
     }
 
+}
+internal class GraphiteClient {
+    val eventChannel = Channel<List<Event>>()
+    lateinit var channelFuture: ChannelFuture
+}
+internal interface GraphiteClientLoadBalancer {
+    suspend fun send(events: List<Event>);
+}
+internal class GraphiteClientRoundRobinLoadBalancer(val graphiteClients: List<GraphiteClient>): GraphiteClientLoadBalancer {
+    private var nextClientIndx = 0
+
+    override suspend fun send(events: List<Event>) {
+        graphiteClients[nextClientIndx].eventChannel.send(events)
+        nextClientIndx += 1
+        if(nextClientIndx == graphiteClients.size) nextClientIndx = 0
+    }
 }

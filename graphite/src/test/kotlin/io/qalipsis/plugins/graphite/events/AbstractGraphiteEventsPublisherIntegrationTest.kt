@@ -102,7 +102,8 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
 
         graphiteEventsPublisher = GraphiteEventsPublisher(
             coroutineScope,
-            configuration
+            configuration,
+            Runtime.getRuntime().availableProcessors()
         )
         graphiteEventsPublisher.start()
     }
