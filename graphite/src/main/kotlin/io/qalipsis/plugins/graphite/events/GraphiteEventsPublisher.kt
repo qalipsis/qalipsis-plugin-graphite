@@ -2,7 +2,7 @@ package io.qalipsis.plugins.graphite.events
 
 import io.micronaut.context.annotation.Requires
 import io.netty.bootstrap.Bootstrap
-import io.netty.channel.ChannelFuture
+import io.netty.channel.Channel
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
@@ -13,14 +13,12 @@ import io.qalipsis.api.Executors
 import io.qalipsis.api.events.AbstractBufferedEventsPublisher
 import io.qalipsis.api.events.Event
 import io.qalipsis.api.events.EventLevel
-import io.qalipsis.plugins.graphite.events.codecs.GraphiteClientHandler
 import io.qalipsis.plugins.graphite.events.codecs.GraphitePickleEncoder
 import io.qalipsis.plugins.graphite.events.codecs.GraphitePlaintextEncoder
 import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.lang.UnsupportedOperationException
@@ -63,7 +61,7 @@ internal class GraphiteEventsPublisher(
     override fun stop() {
         super.stop()
         graphiteClients.forEach {
-            it.eventChannel.close()
+            it.channel.close()
         }
         workerGroup?.shutdownGracefully()
     }
@@ -99,13 +97,10 @@ internal class GraphiteEventsPublisher(
             b.channel(NioSocketChannel::class.java).option(ChannelOption.SO_KEEPALIVE, true)
             b.handler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
-                    ch.pipeline().addLast(
-                        encoder,
-                        GraphiteClientHandler(graphiteClient.eventChannel, coroutineScope)
-                    )
+                    ch.pipeline().addLast(encoder)
                 }
             }).option(ChannelOption.SO_KEEPALIVE, true)
-            graphiteClient.channelFuture = b.connect(configuration.host, configuration.port).sync()
+            graphiteClient.channel = b.connect(configuration.host, configuration.port).sync().channel()
             startUpdateKeepAliveTask(graphiteClient)
             log.info { "Graphite connection established. Host: " + configuration.host + ", port: " + configuration.port + ", protocol: " + configuration.protocol }
         } catch (e: Exception) {
@@ -119,11 +114,9 @@ internal class GraphiteEventsPublisher(
      */
     private fun startUpdateKeepAliveTask(graphiteClient: GraphiteClient) {
         coroutineScope.launch {
-            while(!graphiteClient.channelFuture.isDone) {
+            while(graphiteClient.channel.isOpen) {
                 Thread.sleep(KEEP_ALIVE_UPDATE_MS)
-                if(graphiteClient.channelFuture.isSuccess) {
-                    graphiteClient.channelFuture.channel().writeAndFlush("")
-                }
+                graphiteClient.channel.writeAndFlush("")
             }
         }
     }
@@ -142,8 +135,7 @@ internal class GraphiteEventsPublisher(
 
 }
 internal class GraphiteClient {
-    val eventChannel = Channel<List<Event>>()
-    lateinit var channelFuture: ChannelFuture
+    lateinit var channel: Channel
 }
 internal interface GraphiteClientLoadBalancer {
     suspend fun send(events: List<Event>);
@@ -152,7 +144,7 @@ internal class GraphiteClientRoundRobinLoadBalancer(val graphiteClients: List<Gr
     private var nextClientIndx = 0
 
     override suspend fun send(events: List<Event>) {
-        graphiteClients[nextClientIndx].eventChannel.send(events)
+        graphiteClients[nextClientIndx].channel.writeAndFlush(events)
         nextClientIndx += 1
         if(nextClientIndx == graphiteClients.size) nextClientIndx = 0
     }
