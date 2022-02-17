@@ -11,12 +11,15 @@ tasks.withType<Test> {
 }
 
 val micronautVersion: String by project
+val jacksonVersion: String by project
 
 kotlin.sourceSets["test"].kotlin.srcDir("build/generated/source/kaptKotlin/catadioptre")
 kapt.useBuildCache = false
 
 dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
     api("io.qalipsis:api-common:${project.version}")
 
