@@ -10,3 +10,4 @@ metrics:
     batch-size: 1
     batch-flush-interval-seconds: 1s
     min-log-level: INFO
+    amount-of-clients: 2

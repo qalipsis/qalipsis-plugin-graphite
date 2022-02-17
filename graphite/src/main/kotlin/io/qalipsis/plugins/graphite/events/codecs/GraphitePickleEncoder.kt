@@ -8,6 +8,9 @@ import mu.KotlinLogging
 import java.nio.ByteBuffer
 
 /**
+ * Implementation of [MessageToByteEncoder] for [graphite][https://github.com/graphite-project] pickle protocol.
+ * Receives a list of [Event], encodes them to pickle format and then sends it to [ChannelHandlerContext] for further processing.
+ *
  * @author rklymenko
  */
 internal class GraphitePickleEncoder : MessageToByteEncoder<List<Event>>() {
@@ -24,6 +27,10 @@ internal class GraphitePickleEncoder : MessageToByteEncoder<List<Event>>() {
     private val SEMICOLON = ";"
     private val EQ = "="
 
+    /**
+     * Encodes incoming list of [Event] to [pickle][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-pickle-protocol]
+     * Sends encoded message to [ChannelHandlerContext]
+     */
     override fun encode(
         ctx: ChannelHandlerContext,
         events: List<Event>, out: ByteBuf
@@ -36,6 +43,10 @@ internal class GraphitePickleEncoder : MessageToByteEncoder<List<Event>>() {
         out.retain()
     }
 
+    /**
+     * Receives a list of [Event] and encodes it to [pickle][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-pickle-protocol]
+     * with payload header
+     */
     private fun generateEvent(events: List<Event>): ByteArray {
         val payload = generatePayload(events)
         val payloadBytes = payload.toByteArray()
@@ -43,6 +54,9 @@ internal class GraphitePickleEncoder : MessageToByteEncoder<List<Event>>() {
         return header + payloadBytes
     }
 
+    /**
+     * Receives a list of [Event] and encodes it to [pickle][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-pickle-protocol]
+     */
     private fun generatePayload(events: List<Event>): String {
         val payload = StringBuilder()
         payload.append(MARK)

@@ -98,12 +98,13 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
                 get() = Duration.ofSeconds(1)
             override val minLogLevel: String
                 get() = "INFO"
+            override val amountOfClients: Int
+                get() = 2
         }
 
         graphiteEventsPublisher = GraphiteEventsPublisher(
             coroutineScope,
-            configuration,
-            Runtime.getRuntime().availableProcessors()
+            configuration
         )
         graphiteEventsPublisher.start()
     }

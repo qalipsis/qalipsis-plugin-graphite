@@ -26,14 +26,17 @@ import mu.KotlinLogging
 import java.lang.UnsupportedOperationException
 
 /**
+ * Implementation of [AbstractBufferedEventsPublisher] for [graphite][https://github.com/graphite-project].
+ * Creates a list of [GraphiteClient] based on configuration from [GraphiteEventsConfiguration].
+ * Size may be configured by amountOfClients field.
  *
+ * @author rklymenko
  */
 @Singleton
 @Requires(beans = [GraphiteEventsConfiguration::class])
 internal class GraphiteEventsPublisher(
     @Named(Executors.BACKGROUND_EXECUTOR_NAME) private val coroutineScope: CoroutineScope,
-    private val configuration: GraphiteEventsConfiguration,
-    private val amountOfClients: Int
+    private val configuration: GraphiteEventsConfiguration
 ) : AbstractBufferedEventsPublisher(
     EventLevel.valueOf(configuration.minLogLevel),
     configuration.batchFlushIntervalSeconds,
@@ -41,22 +44,53 @@ internal class GraphiteEventsPublisher(
     coroutineScope
 ) {
 
-    private val graphiteClients = List(amountOfClients) { GraphiteClient() }
+    private val graphiteClients = List(configuration.amountOfClients) { GraphiteClient() }
     private val graphiteClientsLoadBalancer = GraphiteClientRoundRobinLoadBalancer(graphiteClients)
     private lateinit var workerGroup: EventLoopGroup
 
+    /**
+     * Builds clients and starts [AbstractBufferedEventsPublisher].
+     */
     override fun start() {
         buildClients()
         super.start()
     }
 
+    /**
+     * Stops [AbstractBufferedEventsPublisher].
+     * Closes list of [GraphiteClient] and [workerGroup].
+     */
+    override fun stop() {
+        super.stop()
+        graphiteClients.forEach {
+            it.eventChannel.close()
+        }
+        workerGroup?.shutdownGracefully()
+    }
+
+    /**
+     * Publishes a list of [Event] to [GraphiteClientRoundRobinLoadBalancer].
+     */
+    override suspend fun publish(values: List<Event>) {
+        graphiteClientsLoadBalancer.send(values)
+    }
+
+    /**
+     * Builds clients with a configuration from [GraphiteEventsConfiguration].
+     */
     private fun buildClients() {
-        workerGroup = NioEventLoopGroup(amountOfClients)
+        workerGroup = NioEventLoopGroup(configuration.amountOfClients)
         graphiteClients.forEach {
             buildClient(it)
         }
     }
 
+    /**
+     * Builds a client with a configuration from [GraphiteEventsConfiguration].
+     * Decides on encoding protocol using [GraphiteEventsConfiguration].
+     * Opens tcp channel.
+     * Starts [startUpdateKeepAliveTask] for keep-alive updates.
+     */
     private fun buildClient(graphiteClient: GraphiteClient) {
         try {
             val encoder = resolveProtocolEncoder()
@@ -80,6 +114,9 @@ internal class GraphiteEventsPublisher(
         }
     }
 
+    /**
+     * Starts keep-alive updates for a given [GraphiteClient].
+     */
     private fun startUpdateKeepAliveTask(graphiteClient: GraphiteClient) {
         coroutineScope.launch {
             while(!graphiteClient.channelFuture.isDone) {
@@ -89,18 +126,6 @@ internal class GraphiteEventsPublisher(
                 }
             }
         }
-    }
-
-    override fun stop() {
-        super.stop()
-        graphiteClients.forEach {
-            it.eventChannel.close()
-        }
-        workerGroup?.shutdownGracefully()
-    }
-
-    override suspend fun publish(values: List<Event>) {
-        graphiteClientsLoadBalancer.send(values)
     }
 
     private fun resolveProtocolEncoder() = when (configuration.protocol) {

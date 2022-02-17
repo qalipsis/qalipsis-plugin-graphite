@@ -5,6 +5,8 @@ import io.micronaut.context.annotation.Requires
 import java.time.Duration
 
 /**
+ * ConfigurationProperties implementation for application properties
+ *
  * @author rklymenko
  */
 @Requires(property = "metrics.graphite.enabled", value = "true")
@@ -16,4 +18,5 @@ internal interface GraphiteEventsConfiguration {
     val batchSize: Int
     val batchFlushIntervalSeconds: Duration
     val minLogLevel: String
+    val amountOfClients: Int
 }
