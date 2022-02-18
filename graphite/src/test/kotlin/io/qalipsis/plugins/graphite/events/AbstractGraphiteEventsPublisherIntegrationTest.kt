@@ -84,21 +84,21 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
         protocolPort =
             if (protocol == GraphiteProtocol.PICKLE) container.getMappedPort(GRAPHITE_PICKLE_PORT)
             else container.getMappedPort(GRAPHITE_PLAINTEXT_PORT)
-        val protocolName = protocol.name
+        val thatProtocol = protocol
         configuration = object: GraphiteEventsConfiguration{
             override val host: String
                 get() = "$LOCALHOST_HOST"
             override val port: Int
                 get() = protocolPort
-            override val protocol: String
-                get() = protocolName
+            override val protocol: GraphiteProtocol
+                get() = thatProtocol
             override val batchSize: Int
                 get() = 1
-            override val batchFlushIntervalSeconds: Duration
+            override val lingerPeriod: Duration
                 get() = Duration.ofSeconds(1)
-            override val minLogLevel: String
-                get() = "INFO"
-            override val amountOfClients: Int
+            override val minLevel: EventLevel
+                get() = EventLevel.INFO
+            override val publishers: Int
                 get() = 2
         }
 

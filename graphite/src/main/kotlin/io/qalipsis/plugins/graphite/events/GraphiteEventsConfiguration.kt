@@ -11,14 +11,14 @@ import java.time.Duration
  *
  * @author rklymenko
  */
-@Requires(property = "metrics.graphite.enabled", value = "true")
-@ConfigurationProperties("metrics.graphite")
+@Requires(property = "events.export.graphite.enabled", value = "true")
+@ConfigurationProperties("events.export.graphite")
 internal interface GraphiteEventsConfiguration {
+    val minLevel: EventLevel
     val host: String
     val port: Int
     val protocol: GraphiteProtocol
     val batchSize: Int
-    val batchFlushIntervalSeconds: Duration
-    val minLogLevel: EventLevel
-    val amountOfClients: Int
+    val lingerPeriod: Duration
+    val publishers: Int
 }

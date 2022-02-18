@@ -13,7 +13,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 
 /**
+ * Implementation of [AbstractBufferedEventsPublisher] for [graphite][https://github.com/graphite-project].
+ * Creates a list of [GraphiteClient] based on configuration from [GraphiteEventsConfiguration].
+ * Size may be configured by [configuration.publishers] field.
  *
+ * @author rklymenko
  */
 @Singleton
 @Requires(beans = [GraphiteEventsConfiguration::class])
@@ -21,8 +25,8 @@ internal class GraphiteEventsPublisher(
     @Named(Executors.BACKGROUND_EXECUTOR_NAME) private val coroutineScope: CoroutineScope,
     private val configuration: GraphiteEventsConfiguration
 ) : AbstractBufferedEventsPublisher(
-    configuration.minLogLevel,
-    configuration.batchFlushIntervalSeconds,
+    configuration.minLevel,
+    configuration.lingerPeriod,
     configuration.batchSize,
     coroutineScope
 ) {
@@ -31,9 +35,12 @@ internal class GraphiteEventsPublisher(
 
     private lateinit var clients: FixedPool<GraphiteClient>
 
+    /**
+     * Builds [FixedPool]  of [GraphiteClient] and starts [AbstractBufferedEventsPublisher].
+     */
     override fun start() {
         workerGroup = NioEventLoopGroup()
-        clients = FixedPool(configuration.amountOfClients,
+        clients = FixedPool(configuration.publishers,
             checkOnAcquire = true,
             checkOnRelease = true,
             healthCheck = { it.isOpen }) {
@@ -50,17 +57,22 @@ internal class GraphiteEventsPublisher(
         super.start()
     }
 
+    /**
+     * Shutdowns [EventLoopGroup]
+     * Closes [FixedPool] of [GraphiteClient].
+     * Stops [AbstractBufferedEventsPublisher].
+     */
     override fun stop() {
-        val shotdownFuture = workerGroup.shutdownGracefully()
-        while (!shotdownFuture.isDone) {
-            Thread.sleep(200)
-        }
+        workerGroup.shutdownGracefully()
         runBlocking(coroutineScope.coroutineContext) {
             clients.close()
         }
         super.stop()
     }
 
+    /**
+     * Publishes a list of [Event] using [FixedPool] of [GraphiteClient]
+     */
     override suspend fun publish(values: List<Event>) {
         clients.withPoolItem { client ->
             client.publish(values)

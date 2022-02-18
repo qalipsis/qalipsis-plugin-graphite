@@ -1,13 +1,14 @@
 micronaut:
   application:
     name: qalipsisPluginGraphite
-metrics:
-  graphite:
-    enabled: true
-    host: 0.0.0.0
-    port: 2004
-    protocol: pickle
-    batch-size: 1
-    batch-flush-interval-seconds: 1s
-    min-log-level: INFO
-    amount-of-clients: 2
+events:
+  export:
+    graphite:
+      enabled: true
+      min-level: INFO
+      host: localhost
+      port: 2004
+      protocol: pickle
+      batch-size: 2
+      linger-period: 10s
+      publishers: 2
