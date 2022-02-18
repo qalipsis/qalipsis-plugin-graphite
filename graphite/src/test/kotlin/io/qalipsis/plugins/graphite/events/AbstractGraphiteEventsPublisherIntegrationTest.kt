@@ -4,7 +4,7 @@ import io.micronaut.http.HttpStatus
 import io.qalipsis.api.events.Event
 import io.qalipsis.api.events.EventLevel
 import io.qalipsis.api.events.EventTag
-import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
+import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
 import io.qalipsis.test.coroutines.TestDispatcherProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
  */
 @Testcontainers
 @Timeout(3, unit = TimeUnit.MINUTES)
-internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: GraphiteProtocolType) {
+internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val protocol: GraphiteProtocol) {
 
     @JvmField
     @RegisterExtension
@@ -82,7 +82,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
         }
 
         protocolPort =
-            if(protocol == GraphiteProtocolType.pickle) container.getMappedPort(GRAPHITE_PICKLE_PORT)
+            if (protocol == GraphiteProtocol.PICKLE) container.getMappedPort(GRAPHITE_PICKLE_PORT)
             else container.getMappedPort(GRAPHITE_PLAINTEXT_PORT)
         val protocolName = protocol.name
         configuration = object: GraphiteEventsConfiguration{

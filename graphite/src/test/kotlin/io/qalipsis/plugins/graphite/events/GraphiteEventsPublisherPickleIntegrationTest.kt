@@ -1,8 +1,9 @@
 package io.qalipsis.plugins.graphite.events
 
-import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
+import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
 
 /**
  * @author rklymenko
  */
-internal class GraphiteEventsPublisherPickleIntegrationTest: AbstractGraphiteEventsPublisherIntegrationTest(GraphiteProtocolType.pickle)
+internal class GraphiteEventsPublisherPickleIntegrationTest :
+    AbstractGraphiteEventsPublisherIntegrationTest(GraphiteProtocol.PICKLE)
