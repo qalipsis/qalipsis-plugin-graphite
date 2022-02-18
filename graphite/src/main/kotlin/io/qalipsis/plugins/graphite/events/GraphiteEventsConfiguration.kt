@@ -2,6 +2,8 @@ package io.qalipsis.plugins.graphite.events
 
 import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.Requires
+import io.qalipsis.api.events.EventLevel
+import io.qalipsis.plugins.graphite.events.model.GraphiteProtocolType
 import java.time.Duration
 
 /**
@@ -14,9 +16,9 @@ import java.time.Duration
 internal interface GraphiteEventsConfiguration {
     val host: String
     val port: Int
-    val protocol: String
+    val protocol: GraphiteProtocolType
     val batchSize: Int
     val batchFlushIntervalSeconds: Duration
-    val minLogLevel: String
+    val minLogLevel: EventLevel
     val amountOfClients: Int
 }
