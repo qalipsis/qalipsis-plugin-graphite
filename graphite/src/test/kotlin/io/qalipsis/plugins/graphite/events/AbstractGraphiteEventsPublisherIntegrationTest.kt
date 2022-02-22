@@ -90,6 +90,8 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
                 get() = "$LOCALHOST_HOST"
             override val port: Int
                 get() = protocolPort
+            override val httpPort: Int
+                get() = HTTP_PORT
             override val protocol: GraphiteProtocolType
                 get() = protocolThat
             override val batchSize: Int

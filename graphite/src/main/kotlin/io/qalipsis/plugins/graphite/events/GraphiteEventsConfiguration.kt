@@ -16,6 +16,7 @@ import java.time.Duration
 internal interface GraphiteEventsConfiguration {
     val host: String
     val port: Int
+    val httpPort: Int
     val protocol: GraphiteProtocolType
     val batchSize: Int
     val batchFlushIntervalSeconds: Duration

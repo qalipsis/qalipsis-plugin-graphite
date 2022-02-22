@@ -57,8 +57,13 @@ internal class GraphiteMetricsRequestBuilder(val query: String) {
         return queryBuilder.toString()
     }
 }
-data class GraphiteMetricsTime(val amount: Long, val unit: GraphiteMetricsTimeUnit) {
-    fun toQueryString() = "-$amount${unit.getGraphiteTimeUnitCode()}"
+data class GraphiteMetricsTime(val amount: Long, val sign: GraphiteMetricsTimeSignUnit, val unit: GraphiteMetricsTimeUnit) {
+    fun toQueryString() = "${sign}$amount${unit.getGraphiteTimeUnitCode()}"
+}
+enum class GraphiteMetricsTimeSignUnit {
+    minus, plus;
+
+    override fun toString() = if(this == minus) "-" else "+"
 }
 enum class GraphiteMetricsTimeUnit {
     seconds, minutes, hours, days, weeks, months, years;
