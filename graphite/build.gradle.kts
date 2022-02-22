@@ -6,6 +6,18 @@ plugins {
 
 description = "Qalipsis Plugins - Graphite"
 
+allOpen {
+    annotations(
+        "io.micronaut.aop.Around",
+        "jakarta.inject.Singleton",
+        "io.qalipsis.api.annotations.StepConverter",
+        "io.qalipsis.api.annotations.StepDecorator",
+        "io.qalipsis.api.annotations.PluginComponent",
+        "io.qalipsis.api.annotations.Spec",
+        "io.micronaut.validation.Validated"
+    )
+}
+
 tasks.withType<Test> {
     maxParallelForks = 1
 }
