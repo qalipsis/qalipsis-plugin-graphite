@@ -1,6 +1,7 @@
 micronaut:
   application:
     name: qalipsisPluginGraphite
+
 events:
   export:
     graphite:
@@ -12,3 +13,14 @@ events:
       batch-size: 2
       linger-period: 10s
       publishers: 2
+
+# Disables the native micronaut registry.
+micronaut.metrics.export.graphite.enabled: false
+
+meters:
+  graphitedb:
+    host: localhost
+    port: 2004
+    enabled: false
+    step: PT10S
+

@@ -31,6 +31,8 @@ dependencies {
     implementation("io.micronaut:micronaut-http-server-netty")
 
     api("io.qalipsis:api-common:${project.version}")
+    api("io.micronaut.micrometer:micronaut-micrometer-registry-graphite")
+
 
     kapt("io.micronaut:micronaut-inject-java:$micronautVersion")
 

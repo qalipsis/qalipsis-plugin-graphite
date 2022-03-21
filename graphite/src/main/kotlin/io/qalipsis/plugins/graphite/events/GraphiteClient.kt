@@ -2,6 +2,7 @@ package io.qalipsis.plugins.graphite.events
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
+import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.EventLoopGroup
@@ -30,7 +31,12 @@ internal class GraphiteClient(
 
     private var started = false
 
-    private lateinit var channel: Channel
+    private lateinit var channelFuture: ChannelFuture
+
+    protected val channel: Channel
+        get() = channelFuture.channel()
+//
+//    private lateinit var openedChannel: Channel
 
     val isOpen: Boolean
         get() = started && channel.isOpen
@@ -48,7 +54,7 @@ internal class GraphiteClient(
             }
         }).option(ChannelOption.SO_KEEPALIVE, true)
 
-        channel = b.connect(host, port).addListener {
+        channelFuture = b.connect(host, port).addListener {
             runBlocking {
                 if (it.isSuccess) {
                     readinessLatch.set(Result.success(Unit))
@@ -56,13 +62,16 @@ internal class GraphiteClient(
                     readinessLatch.set(Result.failure(it.cause()))
                 }
             }
-        }.channel()
+        }
         log.info { "Graphite connection established. Host: $host, port: $port, protocol: $protocolType" }
 
         readinessLatch.get().getOrThrow()
         started = true
         return this
     }
+
+
+
 
     suspend fun publish(values: List<Event>) {
         val readinessLatch = ImmutableSlot<Result<Unit>>()
@@ -92,5 +101,4 @@ internal class GraphiteClient(
 
         private val log = logger()
     }
-
 }

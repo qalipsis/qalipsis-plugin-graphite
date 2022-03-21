@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import org.junit.Assert
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -125,7 +126,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
 
         //then
         while(!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-            Thread.sleep(200)
+            delay(200)
         }
     }
 
@@ -146,7 +147,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
             val request = generateHttpGet("http://${configuration.host}:${containerHttpPort}/render?target=$key&format=json")
 
             while(!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-                Thread.sleep(200)
+                delay(200)
             }
         }
     }
@@ -168,7 +169,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
             val request = generateHttpGet("http://${configuration.host}:${containerHttpPort}/render?target=$key&format=json")
 
             while(!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-                Thread.sleep(200)
+                delay(200)
             }
         }
     }
@@ -198,7 +199,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
 
         //then
         while(!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-            Thread.sleep(200)
+            delay(200)
         }
     }
 
@@ -213,7 +214,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
 
         //when
         graphiteEventsPublisher.publish(event)
-        Thread.sleep(2_000)
+        delay(2_000)
 
         //then
         Assert.assertFalse(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key))
