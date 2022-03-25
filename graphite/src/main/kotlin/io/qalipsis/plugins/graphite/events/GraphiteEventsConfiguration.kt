@@ -7,7 +7,9 @@ import io.qalipsis.api.events.EventLevel
 import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
 import java.time.Duration
 import javax.validation.constraints.Min
+import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Positive
 
 /**
  * ConfigurationProperties implementation for application properties
@@ -19,16 +21,15 @@ import javax.validation.constraints.NotNull
 internal interface GraphiteEventsConfiguration {
     @get:NotNull
     val minLevel: EventLevel
-    @get:NotNull
+    @get:NotBlank
     val host: String
-    @get:NotNull
+    @get:Positive
     val port: Int
-    @get:NotNull
     val protocol: GraphiteProtocol
-    @get:Min(1)
+    @get:Positive
     val batchSize: Int
-    @get:NotNull
+    @get:Positive
     val lingerPeriod: Duration
-    @get:Min(1)
+    @get:Positive
     val publishers: Int
 }
