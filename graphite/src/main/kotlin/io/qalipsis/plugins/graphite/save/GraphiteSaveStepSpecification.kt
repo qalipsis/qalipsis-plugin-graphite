@@ -6,6 +6,7 @@ import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.plugins.graphite.GraphiteClient
+import io.qalipsis.plugins.graphite.GraphiteStepConnectionImpl
 import io.qalipsis.plugins.graphite.GraphiteStepSpecification
 
 /**
@@ -20,7 +21,7 @@ interface GraphiteSaveStepSpecification<I> :
     /**
      * Configures the connection to the Graphite server.
      */
-    fun connect(clientBuilder: () -> GraphiteClient)
+    fun connect(connectionConfiguration: GraphiteStepConnectionImpl.() -> Unit)
 
     /**
      * Defines the statement to execute when saving.
@@ -43,14 +44,22 @@ internal class GraphiteSaveStepSpecificationImpl<I> :
     GraphiteSaveStepSpecification<I>,
     AbstractStepSpecification<I, I, GraphiteSaveStepSpecification<I>>() {
 
+    internal var connectionConfig = GraphiteStepConnectionImpl()
+
     internal lateinit var clientBuilder: (() -> GraphiteClient)
 
     internal var queryConfiguration = GraphiteSaveMessageConfiguration<I>()
 
     internal var monitoringConfig = StepMonitoringConfiguration()
 
-    override fun connect(clientBuilder: () -> GraphiteClient) {
-        this.clientBuilder = clientBuilder
+    override fun connect(connectionConfiguration: GraphiteStepConnectionImpl.() -> Unit) {
+        connectionConfig.connectionConfiguration();
+        clientBuilder = {
+            GraphiteClient(protocolType = ,
+            host = ,
+            port = ,
+            workerGroup = )
+        }
     }
 
     override fun query(queryConfig: GraphiteSaveMessageConfiguration<I>.() -> Unit) {
