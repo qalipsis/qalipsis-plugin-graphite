@@ -1,3 +1,0 @@
-# QALIPSIS-PLUGINS
-
-T.B.D.
