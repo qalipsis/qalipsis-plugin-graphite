@@ -84,7 +84,7 @@ internal class GraphiteSaveStepSpecificationConverterTest :
                 prop("eventsLogger").isNull()
             }
             prop("retryPolicy").isNotNull()
-//            prop("messages").isSameAs(recordSupplier)
+            prop("messageFactory").isSameAs(recordSupplier)
         }
     }
 
@@ -113,7 +113,7 @@ internal class GraphiteSaveStepSpecificationConverterTest :
         // then
         assertThat(creationContext.createdStep!!).all {
             prop("retryPolicy").isNull()
-//            prop("messages").isSameAs(recordSupplier)
+            prop("messageFactory").isSameAs(recordSupplier)
             prop("graphiteSaveMessageClient").all {
                 prop("clientBuilder").isSameAs(clientBuilder)
                 prop("meterRegistry").isNull()
