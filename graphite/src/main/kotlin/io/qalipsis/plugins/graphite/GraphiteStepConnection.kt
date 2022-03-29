@@ -1,7 +1,9 @@
 package io.qalipsis.plugins.graphite
 
 import io.netty.channel.EventLoopGroup
+import io.netty.channel.nio.NioEventLoopGroup
 import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 /**
  * Interface to establish a connection with Graphite
@@ -15,30 +17,26 @@ interface GraphiteStepConnection {
     /**
      * Configures the basic connection.
      */
-    fun basic(protocolType: GraphiteProtocol, workerGroup: EventLoopGroup)
-
+    fun basic(workerGroup: EventLoopGroup)
 }
-
 
 class GraphiteStepConnectionImpl : GraphiteStepConnection {
 
     @field:NotBlank
-    var url = "http://127.0.0.1:8086"
+    var host: String = "localhost"
 
-    var protocolType: GraphiteProtocol = GraphiteProtocol.PICKLE
-    @field:NotBlank
-    var host: String = ""
-    @field:NotBlank
-    var port: Int = 1
-    var workerGroup: EventLoopGroup
+    @field:NotNull
+    var port: Int = 8080
+
+    @field:NotNull
+    var workerGroup: EventLoopGroup = NioEventLoopGroup()
 
     override fun server(host: String, port: Int) {
         this.host = host
         this.port = port
     }
 
-    override fun basic(protocolType: GraphiteProtocol, workerGroup: EventLoopGroup) {
-        this.protocolType = protocolType
+    override fun basic(workerGroup: EventLoopGroup) {
         this.workerGroup = workerGroup
     }
 }

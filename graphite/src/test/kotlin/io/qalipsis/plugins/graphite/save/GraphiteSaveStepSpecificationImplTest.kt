@@ -4,10 +4,10 @@ import assertk.all
 import assertk.assertThat
 import assertk.assertions.*
 import io.aerisconsulting.catadioptre.getProperty
+import io.netty.channel.nio.NioEventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.steps.DummyStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
-import io.qalipsis.plugins.graphite.GraphiteClient
 import io.qalipsis.plugins.graphite.graphite
 import io.qalipsis.test.mockk.relaxedMockk
 import kotlinx.coroutines.test.runBlockingTest
@@ -32,7 +32,8 @@ internal class GraphiteSaveStepSpecificationImplTest {
         previousStep.graphite().save {
             name = "my-save-step"
             connect {
-                GraphiteClient()
+                server("localhost", 8080)
+                basic(NioEventLoopGroup())
             }
             query {
                 messages = recordSupplier
@@ -55,12 +56,13 @@ internal class GraphiteSaveStepSpecificationImplTest {
         val step: GraphiteSaveStepSpecificationImpl<*> =
             previousStep.nextSteps[0] as GraphiteSaveStepSpecificationImpl<*>
 
-        val database = step.queryConfiguration.getProperty<suspend (ctx: StepContext<*, *>, input: Int) -> String>("database")
-        assertThat(database(relaxedMockk(), relaxedMockk())).isEqualTo("db")
-
-        val collection =
-            step.queryConfiguration.getProperty<suspend (ctx: StepContext<*, *>, input: Int) -> String>("collection")
-        assertThat(collection(relaxedMockk(), relaxedMockk())).isEqualTo("col")
+        val messages =
+            step.queryConfiguration.getProperty<suspend (ctx: StepContext<*, *>, input: Int) -> String>("messages")
+        assertThat(messages(relaxedMockk(), relaxedMockk())).isEqualTo(
+            listOf(
+                "foo 1.1\n", "foo 1.2\n", "foo 1.3\n"
+            )
+        )
     }
 
 
@@ -70,7 +72,8 @@ internal class GraphiteSaveStepSpecificationImplTest {
         previousStep.graphite().save {
             name = "my-save-step"
             connect {
-                GraphiteClient()
+                server("localhost", 8080)
+                basic(NioEventLoopGroup())
             }
             query {
                 messages = recordSupplier
@@ -96,11 +99,12 @@ internal class GraphiteSaveStepSpecificationImplTest {
         val step: GraphiteSaveStepSpecificationImpl<*> =
             previousStep.nextSteps[0] as GraphiteSaveStepSpecificationImpl<*>
 
-        val database = step.queryConfiguration.getProperty<suspend (ctx: StepContext<*, *>, input: Int) -> String>("database")
-        assertThat(database(relaxedMockk(), relaxedMockk())).isEqualTo("db")
-
-        val collection =
-            step.queryConfiguration.getProperty<suspend (ctx: StepContext<*, *>, input: Int) -> String>("collection")
-        assertThat(collection(relaxedMockk(), relaxedMockk())).isEqualTo("col")
+        val messages =
+            step.queryConfiguration.getProperty<suspend (ctx: StepContext<*, *>, input: Int) -> String>("messages")
+        assertThat(messages(relaxedMockk(), relaxedMockk())).isEqualTo(
+            listOf(
+                "foo 1.1\n", "foo 1.2\n", "foo 1.3\n"
+            )
+        )
     }
 }

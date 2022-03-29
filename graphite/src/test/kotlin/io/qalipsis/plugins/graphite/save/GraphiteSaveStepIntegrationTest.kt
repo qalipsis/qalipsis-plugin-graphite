@@ -1,202 +1,247 @@
-//package io.qalipsis.plugins.graphite.save
-//
-//import assertk.all
-//import assertk.assertThat
-//import assertk.assertions.hasSize
-//import assertk.assertions.index
-//import assertk.assertions.isEqualTo
-//import assertk.assertions.isInstanceOf
-//import assertk.assertions.isNotNull
-//import assertk.assertions.key
-//import com.mongodb.reactivestreams.client.MongoClient
-//import com.mongodb.reactivestreams.client.MongoClients
-//import io.micrometer.core.instrument.Counter
-//import io.micrometer.core.instrument.MeterRegistry
-//import io.micrometer.core.instrument.Tags
-//import io.micrometer.core.instrument.Timer
-//import io.mockk.confirmVerified
-//import io.mockk.every
-//import io.mockk.verify
-//import io.qalipsis.api.context.StepStartStopContext
-//import io.qalipsis.api.events.EventsLogger
-//import io.qalipsis.api.sync.SuspendedCountLatch
-//import io.qalipsis.plugins.graphite.GraphiteClient
-//import io.qalipsis.plugins.mondodb.save.MongoDbSaveQueryClientImpl
-//import io.qalipsis.plugins.mondodb.save.MongoDbSaveQueryMeters
-//import io.qalipsis.plugins.mongodb.Constants.DOCKER_IMAGE
-//import io.qalipsis.test.assertk.prop
-//import io.qalipsis.test.coroutines.TestDispatcherProvider
-//import io.qalipsis.test.mockk.WithMockk
-//import io.qalipsis.test.mockk.relaxedMockk
-//import org.bson.Document
-//import org.junit.jupiter.api.AfterAll
-//import org.junit.jupiter.api.BeforeAll
-//import org.junit.jupiter.api.Test
-//import org.junit.jupiter.api.Timeout
-//import org.junit.jupiter.api.assertThrows
-//import org.reactivestreams.Subscriber
-//import org.reactivestreams.Subscription
-//import org.testcontainers.containers.MongoDBContainer
-//import org.testcontainers.containers.wait.strategy.Wait
-//import org.testcontainers.junit.jupiter.Container
-//import org.testcontainers.junit.jupiter.Testcontainers
-//import org.testcontainers.utility.DockerImageName
-//import java.time.Duration
-//import java.util.concurrent.TimeUnit
-//import kotlin.math.pow
-//
-///**
-// *
-// * @author Palina Bril
-// */
-//@Testcontainers
-//@WithMockk
-//internal class GraphiteSaveStepIntegrationTest {
-//
-//    private lateinit var client: GraphiteClient
-//
-//    val testDispatcherProvider = TestDispatcherProvider()
-//
-//    @BeforeAll
-//    fun init() {
-//        client = MongoClients.create("mongodb://localhost:${mongodb.getMappedPort(27017)}/?streamType=netty")
-//    }
-//
-//    @AfterAll
-//    fun shutDown() {
-//        client.close()
-//    }
-//
-//    private val timeToResponse = relaxedMockk<Timer>()
-//
-//    private val recordsCount = relaxedMockk<Counter>()
-//
-//    private val failureCounter = relaxedMockk<Counter>()
-//
-//    private val eventsLogger = relaxedMockk<EventsLogger>()
-//
-//    @Test
-//    @Timeout(10)
-//    fun `should succeed when sending query with single results`() = testDispatcherProvider.run {
-//        val metersTags = relaxedMockk<Tags>()
-//        val meterRegistry = relaxedMockk<MeterRegistry> {
-//            every { counter("mongodb-save-saving-records", refEq(metersTags)) } returns recordsCount
-//            every { timer("mongodb-save-time-to-response", refEq(metersTags)) } returns timeToResponse
-//        }
-//        val startStopContext = relaxedMockk<StepStartStopContext> {
-//            every { toMetersTags() } returns metersTags
-//        }
-//        val countLatch = SuspendedCountLatch(1)
-//        val results = ArrayList<Document>()
-//        val document = Document("key1", "val1")
-//        val saveClient = MongoDbSaveQueryClientImpl(
-//            ioCoroutineScope = this,
-//            clientBuilder = { client },
-//            meterRegistry = meterRegistry,
-//            eventsLogger = eventsLogger
-//        )
-//        val tags: Map<String, String> = emptyMap()
-//
-//        saveClient.start(startStopContext)
-//
-//        val resultOfExecute = saveClient.execute("db1", "col1", listOf(document), tags)
-//
-//        assertThat(resultOfExecute).isInstanceOf(MongoDbSaveQueryMeters::class.java).all {
-//            prop("savedRecords").isEqualTo(1)
-//            prop("failedRecords").isEqualTo(0)
-//            prop("failedRecords").isNotNull()
-//        }
-//
-//        fetchResult(client, "db1", "col1", results, countLatch)
-//        countLatch.await()
-//        assertThat(results).all {
-//            hasSize(1)
-//            index(0).all {
-//                key("key1").isEqualTo("val1")
-//            }
-//        }
-//
-//        verify {
-//            eventsLogger.debug("mongodb.save.saving-records", 1, any(), tags = tags)
-//            timeToResponse.record(more(0L), TimeUnit.NANOSECONDS)
-//            recordsCount.increment(1.0)
-//            eventsLogger.info("mongodb.save.time-to-response", any<Duration>(), any(), tags = tags)
-//            eventsLogger.info("mongodb.save.saved-records", any<Array<*>>(), any(), tags = tags)
-//        }
-//        confirmVerified(timeToResponse, recordsCount, eventsLogger)
-//    }
-//
-//    @Test
-//    @Timeout(10)
-//    fun `should throw an exception when sending invalid documents`(): Unit = testDispatcherProvider.run {
-//        val metersTags = relaxedMockk<Tags>()
-//        val meterRegistry = relaxedMockk<MeterRegistry> {
-//            every { counter("mongodb-save-failures", refEq(metersTags)) } returns failureCounter
-//        }
-//        val startStopContext = relaxedMockk<StepStartStopContext> {
-//            every { toMetersTags() } returns metersTags
-//        }
-//
-//        val saveClient = MongoDbSaveQueryClientImpl(
-//            ioCoroutineScope = this,
-//            clientBuilder = { client },
-//            meterRegistry = meterRegistry,
-//            eventsLogger = eventsLogger
-//        )
-//        val tags: Map<String, String> = emptyMap()
-//        saveClient.start(startStopContext)
-//
-//        assertThrows<Exception> {
-//            saveClient.execute(
-//                "db2",
-//                "col2",
-//                listOf(Document("key1", Duration.ZERO)), // Duration is not supported.
-//                tags
-//            )
-//        }
-//        verify {
-//            failureCounter.increment(1.0)
-//        }
-//        confirmVerified(failureCounter)
-//    }
-//
-//    private fun fetchResult(
-//        client: MongoClient, database: String, collection: String, results: ArrayList<Document>,
-//        countLatch: SuspendedCountLatch
-//    ) {
-//        client.run {
-//            getDatabase(database)
-//                .getCollection(collection)
-//                .find(Document())
-//                .subscribe(
-//                    object : Subscriber<Document> {
-//                        override fun onSubscribe(s: Subscription) {
-//                            s.request(Long.MAX_VALUE)
-//                        }
-//
-//                        override fun onNext(document: Document) {
-//                            results.add(document)
-//                            countLatch.blockingDecrement()
-//                        }
-//
-//                        override fun onError(error: Throwable) {}
-//
-//                        override fun onComplete() {}
-//                    }
-//                )
-//        }
-//    }
-//
-//    companion object {
-//
-//        @Container
-//        @JvmStatic
-//        val mongodb = MongoDBContainer(DockerImageName.parse(DOCKER_IMAGE))
-//            .apply {
-//                waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(30)))
-//                withCreateContainerCmdModifier { cmd ->
-//                    cmd.hostConfig!!.withMemory(512 * 1024.0.pow(2).toLong()).withCpuCount(2)
-//                }
-//            }
-//    }
-//}
+package io.qalipsis.plugins.graphite.save
+
+import assertk.all
+import assertk.assertThat
+import assertk.assertions.hasSize
+import assertk.assertions.index
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
+import assertk.assertions.isNotNull
+import assertk.assertions.startsWith
+import io.micrometer.core.instrument.Counter
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tags
+import io.micrometer.core.instrument.Timer
+import io.micronaut.http.HttpStatus
+import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.verify
+import io.netty.channel.nio.NioEventLoopGroup
+import io.qalipsis.api.context.StepStartStopContext
+import io.qalipsis.api.events.EventsLogger
+import io.qalipsis.plugins.graphite.GraphiteClient
+import io.qalipsis.test.assertk.prop
+import io.qalipsis.test.coroutines.TestDispatcherProvider
+import io.qalipsis.test.mockk.WithMockk
+import io.qalipsis.test.mockk.relaxedMockk
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.RegisterExtension
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.TimeUnit
+
+
+/**
+ *
+ * @author Palina Bril
+ */
+@Testcontainers
+@WithMockk
+internal class GraphiteSaveStepIntegrationTest {
+
+    @JvmField
+    @RegisterExtension
+    val testDispatcherProvider = TestDispatcherProvider()
+
+    private val container = CONTAINER
+
+    private var containerHttpPort = -1
+
+    private val httpClient = createSimpleHttpClient()
+
+    private var protocolPort = -1
+
+    private lateinit var client: GraphiteClient
+
+    private val timeToResponse = relaxedMockk<Timer>()
+
+    private val recordsCount = relaxedMockk<Counter>()
+
+    private val eventsLogger = relaxedMockk<EventsLogger>()
+
+    companion object {
+
+        const val GRAPHITE_IMAGE_NAME = "graphiteapp/graphite-statsd:latest"
+        const val HTTP_PORT = 80
+        const val GRAPHITE_PLAINTEXT_PORT = 2003
+        const val LOCALHOST_HOST = "localhost"
+
+        @Container
+        @JvmStatic
+        private val CONTAINER = GenericContainer<Nothing>(
+            DockerImageName.parse(GRAPHITE_IMAGE_NAME)
+        ).apply {
+            setWaitStrategy(HostPortWaitStrategy())
+            withExposedPorts(HTTP_PORT, GRAPHITE_PLAINTEXT_PORT)
+            withAccessToHost(true)
+            withStartupTimeout(Duration.ofSeconds(60))
+            withCreateContainerCmdModifier { it.hostConfig!!.withMemory((512 * 1e20).toLong()).withCpuCount(2) }
+        }
+    }
+
+    @BeforeAll
+    fun setUp() {
+        containerHttpPort = container.getMappedPort(HTTP_PORT)
+        val request = generateHttpGet("http://$LOCALHOST_HOST:${containerHttpPort}/render")
+        while (httpClient.send(request, HttpResponse.BodyHandlers.ofString()).statusCode() != HttpStatus.OK.code) {
+            Thread.sleep(1_000)
+        }
+        protocolPort = container.getMappedPort(GRAPHITE_PLAINTEXT_PORT)
+
+        client = GraphiteClient(
+            host = LOCALHOST_HOST,
+            port = protocolPort,
+            workerGroup = NioEventLoopGroup()
+        )
+    }
+
+    @Test
+    @Timeout(10)
+    fun `should succeed when sending query with results`() = testDispatcherProvider.run {
+        //given
+        val metersTags = relaxedMockk<Tags>()
+        val meterRegistry = relaxedMockk<MeterRegistry> {
+            every { counter("graphite-save-saving-messages", refEq(metersTags)) } returns recordsCount
+            every { timer("graphite-save-time-to-response", refEq(metersTags)) } returns timeToResponse
+        }
+        val startStopContext = relaxedMockk<StepStartStopContext> {
+            every { toMetersTags() } returns metersTags
+        }
+        val results = mutableListOf<String>()
+        val saveClient = GraphiteSaveMessageClientImpl(
+            clientBuilder = { client },
+            meterRegistry = meterRegistry,
+            eventsLogger = eventsLogger
+        )
+        val tags: Map<String, String> = emptyMap()
+
+        saveClient.start(startStopContext)
+
+        val key = "foo.first"
+        val keyTwo = "foo.second"
+        val keyThird = "foo.third"
+
+        val request = generateHttpGet("http://$LOCALHOST_HOST:${containerHttpPort}/render?target=$key&format=json")
+        val requestTwo =
+            generateHttpGet("http://$LOCALHOST_HOST:${containerHttpPort}/render?target=$keyTwo&format=json")
+        val requestThird =
+            generateHttpGet("http://$LOCALHOST_HOST:${containerHttpPort}/render?target=$keyThird&format=json")
+
+        val now = Instant.now().toEpochMilli() / 1000
+
+        //when+then
+        async {
+            val resultOfExecute = saveClient.execute(
+                listOf(
+                    "foo.first 1.1 $now\n", "foo.second 1.2 $now\n", "foo.third 1.3 $now\n"
+                ), tags
+            )
+            assertThat(resultOfExecute).isInstanceOf(GraphiteSaveQueryMeters::class.java).all {
+                prop("savedMessages").isEqualTo(3)
+                prop("timeToResult").isNotNull()
+            }
+            verify {
+                eventsLogger.debug("graphite.save.saving-messages", 3, any(), tags = tags)
+                timeToResponse.record(more(0L), TimeUnit.NANOSECONDS)
+                recordsCount.increment(3.0)
+                eventsLogger.info("graphite.save.time-to-response", any<Duration>(), any(), tags = tags)
+                eventsLogger.info("graphite.save.successes", any<Array<*>>(), any(), tags = tags)
+            }
+            confirmVerified(timeToResponse, recordsCount, eventsLogger)
+        }
+
+        //then
+        while (!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
+            Thread.sleep(200)
+        }
+        results.add(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body())
+        results.add(httpClient.send(requestTwo, HttpResponse.BodyHandlers.ofString()).body())
+        results.add(httpClient.send(requestThird, HttpResponse.BodyHandlers.ofString()).body())
+        assertThat(results).all {
+            hasSize(3)
+            index(0).all {
+                startsWith("[{\"target\": \"foo.first\", \"tags\": {\"name\": \"foo.first\"},")
+            }
+            index(1).all {
+                startsWith("[{\"target\": \"foo.second\", \"tags\": {\"name\": \"foo.second\"},")
+            }
+            index(2).all {
+                startsWith("[{\"target\": \"foo.third\", \"tags\": {\"name\": \"foo.third\"},")
+            }
+        }
+    }
+
+
+    @Test
+    @Timeout(10)
+    fun `shouldn't succeed when sending wrong format message`() = runBlocking {
+        //given
+        val metersTags = relaxedMockk<Tags>()
+        val meterRegistry = relaxedMockk<MeterRegistry> {
+            every { counter("graphite-save-saving-messages", refEq(metersTags)) } returns recordsCount
+            every { timer("graphite-save-time-to-response", refEq(metersTags)) } returns timeToResponse
+        }
+        val startStopContext = relaxedMockk<StepStartStopContext> {
+            every { toMetersTags() } returns metersTags
+        }
+        val results = mutableListOf<String>()
+        val saveClient = GraphiteSaveMessageClientImpl(
+            clientBuilder = { client },
+            meterRegistry = meterRegistry,
+            eventsLogger = eventsLogger
+        )
+        val tags: Map<String, String> = emptyMap()
+
+        saveClient.start(startStopContext)
+
+        val key = "hola.first"
+
+        val request = generateHttpGet("http://$LOCALHOST_HOST:${containerHttpPort}/render?target=$key&format=json")
+
+        //when+then
+        async {
+            assertThrows<Exception> {
+                saveClient.execute(
+                    listOf(
+                        "hola.first 1.1", "hola.second 1.2"
+                    ),
+                    tags
+                )
+            }
+        }
+
+        //then
+        results.add(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body())
+        assertThat(results).all {
+            hasSize(1)
+            index(0).all {
+                isEqualTo("[]")
+            }
+        }
+    }
+
+    private fun generateHttpGet(uri: String) =
+        HttpRequest.newBuilder()
+            .GET()
+            .uri(URI.create(uri))
+            .build()
+
+    protected fun createSimpleHttpClient() =
+        HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .build()
+}

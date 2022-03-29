@@ -55,10 +55,11 @@ internal class GraphiteSaveStepSpecificationImpl<I> :
     override fun connect(connectionConfiguration: GraphiteStepConnectionImpl.() -> Unit) {
         connectionConfig.connectionConfiguration();
         clientBuilder = {
-            GraphiteClient(protocolType = ,
-            host = ,
-            port = ,
-            workerGroup = )
+            GraphiteClient(
+                host = connectionConfig.host,
+                port = connectionConfig.port,
+                workerGroup = connectionConfig.workerGroup
+            )
         }
     }
 
