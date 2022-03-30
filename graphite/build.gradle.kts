@@ -4,7 +4,6 @@ plugins {
     kotlin("jvm")
     kotlin("kapt")
     kotlin("plugin.allopen")
-    `java-test-fixtures`
 }
 
 description = "Qalipsis Plugins - Graphite"
@@ -33,7 +32,6 @@ val kotlinCoroutinesVersion: String by project
 val testContainersVersion: String by project
 val nettyVersion = "4.1.51.Final"
 val catadioptreVersion: String by project
-val jacksonVersion: String by project
 
 kotlin.sourceSets["test"].kotlin.srcDir("build/generated/source/kaptKotlin/catadioptre")
 kapt.useBuildCache = false
@@ -47,8 +45,6 @@ dependencies {
 
     implementation(platform("io.netty:netty-bom:$nettyVersion"))
     implementation("io.micronaut:micronaut-http-server-netty")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
 
     api("io.qalipsis:api-common:${project.version}")
     api("io.micronaut.micrometer:micronaut-micrometer-registry-graphite")

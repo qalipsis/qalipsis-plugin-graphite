@@ -3,8 +3,7 @@ package io.qalipsis.plugins.graphite.save.codecs
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
-import io.qalipsis.api.events.Event
-import mu.KotlinLogging
+import mu.KotlinLogging.logger
 
 /**
  * Implementation of [MessageToByteEncoder] for [graphite][https://github.com/graphite-project] plaintext string protocol.
@@ -18,10 +17,7 @@ internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String
      * Encodes incoming list of [String] to [plaintext][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-plaintext-protocol]
      * Sends encoded messages one by one to [ChannelHandlerContext]
      */
-    override fun encode(
-        ctx: ChannelHandlerContext,
-        messages: List<String>, out: ByteBuf
-    ) {
+    override fun encode(ctx: ChannelHandlerContext, messages: List<String>, out: ByteBuf) {
         log.info { "Encoding messages: " + messages }
         messages.forEach {
             out.writeBytes(it.toByteArray())
@@ -32,7 +28,6 @@ internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String
     }
 
     companion object {
-        @JvmStatic
-        private val log = KotlinLogging.logger {}
+        private val log = logger {}
     }
 }

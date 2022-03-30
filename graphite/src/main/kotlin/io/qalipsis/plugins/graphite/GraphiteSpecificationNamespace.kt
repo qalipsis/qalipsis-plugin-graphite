@@ -19,7 +19,7 @@ interface GraphiteStepSpecification<INPUT, OUTPUT, SELF : StepSpecification<INPU
  *
  * @author Palina Bril
  */
-class GraphiteSpecificationImpl<INPUT, OUTPUT>(wrappedStepSpec: StepSpecification<INPUT, OUTPUT, *>) :
+internal class GraphiteSpecificationImpl<INPUT, OUTPUT>(wrappedStepSpec: StepSpecification<INPUT, OUTPUT, *>) :
     AbstractPluginStepWrapper<INPUT, OUTPUT>(wrappedStepSpec),
     GraphiteStepSpecification<INPUT, OUTPUT, AbstractPluginStepWrapper<INPUT, OUTPUT>>
 

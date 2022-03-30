@@ -25,8 +25,7 @@ import io.qalipsis.test.coroutines.TestDispatcherProvider
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
 import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.assertThrows
@@ -43,7 +42,6 @@ import java.net.http.HttpResponse
 import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-
 
 /**
  *
@@ -93,7 +91,7 @@ internal class GraphiteSaveStepIntegrationTest {
         }
     }
 
-    @BeforeAll
+    @BeforeEach
     fun setUp() {
         containerHttpPort = container.getMappedPort(HTTP_PORT)
         val request = generateHttpGet("http://$LOCALHOST_HOST:${containerHttpPort}/render")
@@ -166,7 +164,7 @@ internal class GraphiteSaveStepIntegrationTest {
 
         //then
         while (!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-            Thread.sleep(200)
+            //do nothing
         }
         results.add(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body())
         results.add(httpClient.send(requestTwo, HttpResponse.BodyHandlers.ofString()).body())
@@ -183,12 +181,12 @@ internal class GraphiteSaveStepIntegrationTest {
                 startsWith("[{\"target\": \"foo.third\", \"tags\": {\"name\": \"foo.third\"},")
             }
         }
+        saveClient.stop(startStopContext)
     }
-
 
     @Test
     @Timeout(10)
-    fun `shouldn't succeed when sending wrong format message`() = runBlocking {
+    fun `should fail when sending wrong format message`() = testDispatcherProvider.run {
         //given
         val metersTags = relaxedMockk<Tags>()
         val meterRegistry = relaxedMockk<MeterRegistry> {
@@ -223,7 +221,6 @@ internal class GraphiteSaveStepIntegrationTest {
                 )
             }
         }
-
         //then
         results.add(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body())
         assertThat(results).all {

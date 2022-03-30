@@ -8,12 +8,11 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSameAs
 import assertk.assertions.isTrue
-import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.spyk
+import io.netty.channel.nio.NioEventLoopGroup
 import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepCreationContextImpl
-import io.qalipsis.plugins.graphite.GraphiteClient
 import io.qalipsis.test.assertk.prop
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.relaxedMockk
@@ -35,10 +34,6 @@ internal class GraphiteSaveStepSpecificationConverterTest :
         )
     }
 
-    @RelaxedMockK
-    private lateinit var clientBuilder: () -> GraphiteClient
-
-
     @Test
     override fun `should not support unexpected spec`() {
         assertThat(converter.support(relaxedMockk()))
@@ -58,11 +53,11 @@ internal class GraphiteSaveStepSpecificationConverterTest :
         val spec = GraphiteSaveStepSpecificationImpl<Any>()
         spec.also {
             it.name = "graphite-save-step"
-            it.clientBuilder = clientBuilder
-            it.query {
-                messages = recordSupplier
+            it.records = recordSupplier
+            it.connect {
+                server("localhost", 8080)
+                workerGroup { NioEventLoopGroup() }
             }
-            it.retryPolicy = mockedRetryPolicy
             it.monitoring {
                 meters = true
                 events = false
@@ -79,11 +74,10 @@ internal class GraphiteSaveStepSpecificationConverterTest :
         assertThat(creationContext.createdStep!!).all {
             prop("id").isEqualTo("graphite-save-step")
             prop("graphiteSaveMessageClient").all {
-                prop("clientBuilder").isSameAs(clientBuilder)
+                prop("clientBuilder").isNotNull()
                 prop("meterRegistry").isSameAs(meterRegistry)
                 prop("eventsLogger").isNull()
             }
-            prop("retryPolicy").isNotNull()
             prop("messageFactory").isSameAs(recordSupplier)
         }
     }
@@ -93,10 +87,11 @@ internal class GraphiteSaveStepSpecificationConverterTest :
         // given
         val spec = GraphiteSaveStepSpecificationImpl<Any>()
         spec.also {
-            it.query {
-                messages = recordSupplier
+            it.records = recordSupplier
+            it.connect {
+                server("localhost", 8080)
+                workerGroup { NioEventLoopGroup() }
             }
-            it.clientBuilder = clientBuilder
             it.monitoring {
                 events = true
             }
@@ -115,7 +110,7 @@ internal class GraphiteSaveStepSpecificationConverterTest :
             prop("retryPolicy").isNull()
             prop("messageFactory").isSameAs(recordSupplier)
             prop("graphiteSaveMessageClient").all {
-                prop("clientBuilder").isSameAs(clientBuilder)
+                prop("clientBuilder").isNotNull()
                 prop("meterRegistry").isNull()
                 prop("eventsLogger").isSameAs(eventsLogger)
             }

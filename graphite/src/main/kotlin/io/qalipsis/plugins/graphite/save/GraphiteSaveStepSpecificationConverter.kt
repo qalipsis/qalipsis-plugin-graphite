@@ -2,12 +2,12 @@ package io.qalipsis.plugins.graphite.save
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.qalipsis.api.annotations.StepConverter
-import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.lang.supplyIf
 import io.qalipsis.api.steps.StepCreationContext
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.api.steps.StepSpecificationConverter
+import io.qalipsis.plugins.graphite.GraphiteClient
 
 /**
  * [StepSpecificationConverter] from [GraphiteSaveStepSpecificationImpl] to [GraphiteSaveStep]
@@ -28,17 +28,25 @@ internal class GraphiteSaveStepSpecificationConverter(
     override suspend fun <I, O> convert(creationContext: StepCreationContext<GraphiteSaveStepSpecificationImpl<*>>) {
         val spec = creationContext.stepSpecification
         val stepId = spec.name
+        val workerGroup = spec.connectionConfig.workerGroup()
+        val clientBuilder = {
+            GraphiteClient(
+                host = spec.connectionConfig.host,
+                port = spec.connectionConfig.port,
+                workerGroup = workerGroup
+            )
+        }
 
         @Suppress("UNCHECKED_CAST")
         val step = GraphiteSaveStep(
             id = stepId,
             retryPolicy = spec.retryPolicy,
             graphiteSaveMessageClient = GraphiteSaveMessageClientImpl(
-                spec.clientBuilder,
+                clientBuilder = clientBuilder,
                 eventsLogger = supplyIf(spec.monitoringConfig.events) { eventsLogger },
                 meterRegistry = supplyIf(spec.monitoringConfig.meters) { meterRegistry }
             ),
-            messageFactory = spec.queryConfiguration.messages as suspend (ctx: StepContext<*, *>, input: I) -> List<String>,
+            messageFactory = spec.records
         )
         creationContext.createdStep(step)
     }

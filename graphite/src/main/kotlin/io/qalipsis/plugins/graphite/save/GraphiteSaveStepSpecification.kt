@@ -6,8 +6,9 @@ import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.StepSpecification
 import io.qalipsis.plugins.graphite.GraphiteClient
-import io.qalipsis.plugins.graphite.GraphiteStepConnectionImpl
 import io.qalipsis.plugins.graphite.GraphiteStepSpecification
+import io.qalipsis.plugins.graphite.GraphiteStepSpecificationConnection
+import io.qalipsis.plugins.graphite.GraphiteStepSpecificationConnectionImpl
 
 /**
  * Specification for a [io.qalipsis.plugins.graphite.save.GraphiteSaveStep] to save data to a Graphite.
@@ -21,12 +22,12 @@ interface GraphiteSaveStepSpecification<I> :
     /**
      * Configures the connection to the Graphite server.
      */
-    fun connect(connectionConfiguration: GraphiteStepConnectionImpl.() -> Unit)
+    fun connect(connectionConfiguration: GraphiteStepSpecificationConnection.() -> Unit)
 
     /**
      * Defines the statement to execute when saving.
      */
-    fun query(queryConfig: GraphiteSaveMessageConfiguration<I>.() -> Unit)
+    fun records(recordsFactory: suspend (ctx: StepContext<*, *>, input: I) -> List<String>)
 
     /**
      * Configures the monitoring of the save step.
@@ -44,44 +45,24 @@ internal class GraphiteSaveStepSpecificationImpl<I> :
     GraphiteSaveStepSpecification<I>,
     AbstractStepSpecification<I, I, GraphiteSaveStepSpecification<I>>() {
 
-    internal var connectionConfig = GraphiteStepConnectionImpl()
+    internal var connectionConfig = GraphiteStepSpecificationConnectionImpl()
 
-    internal lateinit var clientBuilder: (() -> GraphiteClient)
-
-    internal var queryConfiguration = GraphiteSaveMessageConfiguration<I>()
+    internal var records: (suspend (ctx: StepContext<*, *>, input: I) -> List<String>) =  { _, _ -> emptyList() }
 
     internal var monitoringConfig = StepMonitoringConfiguration()
 
-    override fun connect(connectionConfiguration: GraphiteStepConnectionImpl.() -> Unit) {
+    override fun connect(connectionConfiguration: GraphiteStepSpecificationConnection.() -> Unit) {
         connectionConfig.connectionConfiguration();
-        clientBuilder = {
-            GraphiteClient(
-                host = connectionConfig.host,
-                port = connectionConfig.port,
-                workerGroup = connectionConfig.workerGroup
-            )
-        }
     }
 
-    override fun query(queryConfig: GraphiteSaveMessageConfiguration<I>.() -> Unit) {
-        queryConfiguration.queryConfig()
+    override fun records(recordsFactory: suspend (ctx: StepContext<*, *>, input: I) -> List<String>) {
+        this.records = recordsFactory
     }
 
     override fun monitoring(monitoringConfig: StepMonitoringConfiguration.() -> Unit) {
         this.monitoringConfig.monitoringConfig()
     }
 }
-
-/**
- * Configuration of routing and generation of messages to save in Graphite.
- *
- * @property messages closure to generate a list of messages for save
- *
- */
-@Spec
-data class GraphiteSaveMessageConfiguration<I>(
-    var messages: suspend (ctx: StepContext<*, *>, input: I) -> List<String> = { _, _ -> listOf() }
-)
 
 /**
  * Saves messages into Graphite.

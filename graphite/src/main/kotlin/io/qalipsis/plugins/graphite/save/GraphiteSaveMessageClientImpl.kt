@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit
  */
 internal class GraphiteSaveMessageClientImpl(
     private val clientBuilder: () -> GraphiteClient,
-    private var eventsLogger: EventsLogger?,
+    private val eventsLogger: EventsLogger?,
     private val meterRegistry: MeterRegistry?
 ) : GraphiteSaveMessageClient {
 
@@ -85,7 +85,6 @@ internal class GraphiteSaveMessageClientImpl(
     }
 
     companion object {
-        @JvmStatic
         private val log = logger()
     }
 }

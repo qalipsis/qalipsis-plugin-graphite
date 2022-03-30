@@ -1,14 +1,13 @@
 package io.qalipsis.plugins.graphite
 
 import io.netty.channel.EventLoopGroup
-import io.netty.channel.nio.NioEventLoopGroup
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 /**
  * Interface to establish a connection with Graphite
  */
-interface GraphiteStepConnection {
+interface GraphiteStepSpecificationConnection {
     /**
      * Configures the servers settings.
      */
@@ -17,10 +16,10 @@ interface GraphiteStepConnection {
     /**
      * Configures the basic connection.
      */
-    fun basic(workerGroup: EventLoopGroup)
+    fun workerGroup(workerGroupConfigurer: () -> EventLoopGroup)
 }
 
-class GraphiteStepConnectionImpl : GraphiteStepConnection {
+internal class GraphiteStepSpecificationConnectionImpl : GraphiteStepSpecificationConnection {
 
     @field:NotBlank
     var host: String = "localhost"
@@ -28,15 +27,14 @@ class GraphiteStepConnectionImpl : GraphiteStepConnection {
     @field:NotNull
     var port: Int = 8080
 
-    @field:NotNull
-    var workerGroup: EventLoopGroup = NioEventLoopGroup()
+    lateinit var workerGroup: () -> EventLoopGroup
 
     override fun server(host: String, port: Int) {
         this.host = host
         this.port = port
     }
 
-    override fun basic(workerGroup: EventLoopGroup) {
-        this.workerGroup = workerGroup
+    override fun workerGroup(workerGroupConfigurer: () -> EventLoopGroup) {
+        this.workerGroup = workerGroupConfigurer
     }
 }
