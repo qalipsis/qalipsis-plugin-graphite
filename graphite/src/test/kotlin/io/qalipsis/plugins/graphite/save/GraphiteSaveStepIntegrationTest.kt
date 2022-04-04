@@ -34,6 +34,7 @@ import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.shaded.org.awaitility.Awaitility.await
 import org.testcontainers.utility.DockerImageName
 import java.net.URI
 import java.net.http.HttpClient
@@ -164,7 +165,7 @@ internal class GraphiteSaveStepIntegrationTest {
 
         //then
         while (!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-            //do nothing
+            await().atMost(1, TimeUnit.SECONDS)
         }
         results.add(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body())
         results.add(httpClient.send(requestTwo, HttpResponse.BodyHandlers.ofString()).body())

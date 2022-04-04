@@ -1,13 +1,14 @@
 package io.qalipsis.plugins.graphite
 
 import io.netty.channel.EventLoopGroup
+import io.qalipsis.api.annotations.Spec
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
 /**
  * Interface to establish a connection with Graphite
  */
-interface GraphiteStepSpecificationConnection {
+interface GraphiteConnectionSpecification {
     /**
      * Configures the servers settings.
      */
@@ -19,7 +20,8 @@ interface GraphiteStepSpecificationConnection {
     fun workerGroup(workerGroupConfigurer: () -> EventLoopGroup)
 }
 
-internal class GraphiteStepSpecificationConnectionImpl : GraphiteStepSpecificationConnection {
+@Spec
+internal class GraphiteConnectionSpecificationImpl : GraphiteConnectionSpecification {
 
     @field:NotBlank
     var host: String = "localhost"

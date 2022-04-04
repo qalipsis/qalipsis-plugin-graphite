@@ -30,7 +30,7 @@ allOpen {
 val micronautVersion: String by project
 val kotlinCoroutinesVersion: String by project
 val testContainersVersion: String by project
-val nettyVersion = "4.1.51.Final"
+val nettyVersion: String by project
 val catadioptreVersion: String by project
 
 kotlin.sourceSets["test"].kotlin.srcDir("build/generated/source/kaptKotlin/catadioptre")

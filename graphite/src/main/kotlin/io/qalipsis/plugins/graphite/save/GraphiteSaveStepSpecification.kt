@@ -5,10 +5,9 @@ import io.qalipsis.api.context.StepContext
 import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.StepMonitoringConfiguration
 import io.qalipsis.api.steps.StepSpecification
-import io.qalipsis.plugins.graphite.GraphiteClient
 import io.qalipsis.plugins.graphite.GraphiteStepSpecification
-import io.qalipsis.plugins.graphite.GraphiteStepSpecificationConnection
-import io.qalipsis.plugins.graphite.GraphiteStepSpecificationConnectionImpl
+import io.qalipsis.plugins.graphite.GraphiteConnectionSpecification
+import io.qalipsis.plugins.graphite.GraphiteConnectionSpecificationImpl
 
 /**
  * Specification for a [io.qalipsis.plugins.graphite.save.GraphiteSaveStep] to save data to a Graphite.
@@ -22,7 +21,7 @@ interface GraphiteSaveStepSpecification<I> :
     /**
      * Configures the connection to the Graphite server.
      */
-    fun connect(connectionConfiguration: GraphiteStepSpecificationConnection.() -> Unit)
+    fun connect(connectionConfiguration: GraphiteConnectionSpecification.() -> Unit)
 
     /**
      * Defines the statement to execute when saving.
@@ -45,13 +44,13 @@ internal class GraphiteSaveStepSpecificationImpl<I> :
     GraphiteSaveStepSpecification<I>,
     AbstractStepSpecification<I, I, GraphiteSaveStepSpecification<I>>() {
 
-    internal var connectionConfig = GraphiteStepSpecificationConnectionImpl()
+    internal var connectionConfig = GraphiteConnectionSpecificationImpl()
 
     internal var records: (suspend (ctx: StepContext<*, *>, input: I) -> List<String>) =  { _, _ -> emptyList() }
 
     internal var monitoringConfig = StepMonitoringConfiguration()
 
-    override fun connect(connectionConfiguration: GraphiteStepSpecificationConnection.() -> Unit) {
+    override fun connect(connectionConfiguration: GraphiteConnectionSpecification.() -> Unit) {
         connectionConfig.connectionConfiguration();
     }
 

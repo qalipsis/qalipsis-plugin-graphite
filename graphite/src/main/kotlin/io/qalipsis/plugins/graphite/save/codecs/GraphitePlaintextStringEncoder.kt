@@ -3,7 +3,7 @@ package io.qalipsis.plugins.graphite.save.codecs
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
-import mu.KotlinLogging.logger
+import io.qalipsis.api.logging.LoggerHelper.logger
 
 /**
  * Implementation of [MessageToByteEncoder] for [graphite][https://github.com/graphite-project] plaintext string protocol.
@@ -28,6 +28,6 @@ internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String
     }
 
     companion object {
-        private val log = logger {}
+        private val log = logger()
     }
 }

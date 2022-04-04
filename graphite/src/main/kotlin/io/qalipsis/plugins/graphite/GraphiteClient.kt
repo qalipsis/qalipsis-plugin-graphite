@@ -19,7 +19,7 @@ import kotlinx.coroutines.runBlocking
  *
  * @author rklymenko
  */
-class GraphiteClient(
+internal class GraphiteClient(
     private val host: String,
     private val port: Int,
     private val workerGroup: EventLoopGroup
