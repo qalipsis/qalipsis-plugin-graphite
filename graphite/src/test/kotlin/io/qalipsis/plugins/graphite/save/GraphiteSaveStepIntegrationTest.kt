@@ -109,7 +109,7 @@ internal class GraphiteSaveStepIntegrationTest {
     }
 
     @Test
-    @Timeout(10)
+    @Timeout(20)
     fun `should succeed when sending query with results`() = testDispatcherProvider.run {
         //given
         val metersTags = relaxedMockk<Tags>()
@@ -164,9 +164,9 @@ internal class GraphiteSaveStepIntegrationTest {
         }
 
         //then
-        while (!httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key)) {
-            await().atMost(1, TimeUnit.SECONDS)
-        }
+        await().atMost(10, TimeUnit.SECONDS)
+            .until { httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body().contains(key) }
+
         results.add(httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body())
         results.add(httpClient.send(requestTwo, HttpResponse.BodyHandlers.ofString()).body())
         results.add(httpClient.send(requestThird, HttpResponse.BodyHandlers.ofString()).body())
