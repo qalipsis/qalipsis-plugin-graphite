@@ -106,11 +106,7 @@ internal class GraphiteIterativeReader(
                 pollingJob.cancelAndJoin()
             }
         }
-//        runCatching {
-//            client.close()
-//        }
         resultsChannel.cancel()
-//        pollStatement.reset(
     }
 
     @KTestable
@@ -129,7 +125,6 @@ internal class GraphiteIterativeReader(
             )
             val timeToSuccess = Duration.ofNanos(System.nanoTime() - requestStart)
             for (record in results) {
-                // FIXME The values are not really sorted.
                 records.add(record)
             }
             recordsCount?.increment(records.size.toDouble())
