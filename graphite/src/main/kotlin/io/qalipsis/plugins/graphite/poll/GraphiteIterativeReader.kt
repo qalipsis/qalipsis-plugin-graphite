@@ -1,5 +1,6 @@
 package io.qalipsis.plugins.influxdb.poll
 
+import io.aerisconsulting.catadioptre.KTestable
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
@@ -36,7 +37,7 @@ import java.time.Duration
 internal class GraphiteIterativeReader(
     private val coroutineScope: CoroutineScope,
     private val clientFactory: () -> GraphiteRenderApiService,
-    private val pollStatement: PollStatement,
+    private val pollStatement: GraphitePollStatement,
     private val pollDelay: Duration,
     private val resultsChannelFactory: () -> Channel<GraphiteQueryResult> = { Channel(Channel.UNLIMITED) },
     private val eventsLogger: EventsLogger?,
@@ -105,11 +106,11 @@ internal class GraphiteIterativeReader(
                 pollingJob.cancelAndJoin()
             }
         }
-        runCatching {
-            client.close()
-        }
+//        runCatching {
+//            client.close()
+//        }
         resultsChannel.cancel()
-        pollStatement.reset()
+//        pollStatement.reset(
     }
 
     @KTestable
@@ -123,7 +124,9 @@ internal class GraphiteIterativeReader(
         eventsLogger?.trace("$eventPrefix.polling", tags = context.toEventTags())
         val requestStart = System.nanoTime()
         try {
-            val results = client.queryObject()
+            val results = client.queryObject(
+                pollStatement.getNextQuery()
+            )
             val timeToSuccess = Duration.ofNanos(System.nanoTime() - requestStart)
             for (record in results) {
                 // FIXME The values are not really sorted.

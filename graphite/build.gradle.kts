@@ -24,11 +24,13 @@ tasks.withType<Test> {
 
 val micronautVersion: String by project
 val jacksonVersion: String by project
+val catadioptreVersion: String by project
 
 kotlin.sourceSets["test"].kotlin.srcDir("build/generated/source/kaptKotlin/catadioptre")
 kapt.useBuildCache = false
 
 dependencies {
+    compileOnly("io.aeris-consulting:catadioptre-annotations:${catadioptreVersion}")
     implementation("io.micronaut:micronaut-http-server-netty")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
@@ -36,6 +38,8 @@ dependencies {
     api("io.qalipsis:api-common:${project.version}")
 
     kapt("io.micronaut:micronaut-inject-java:$micronautVersion")
+    kapt("io.aeris-consulting:catadioptre-annotations:${catadioptreVersion}")
+
 
     testImplementation("io.micronaut:micronaut-runtime")
     testImplementation("io.micronaut.test:micronaut-test-junit5")
