@@ -57,7 +57,7 @@ internal class GraphitePollStatement(
                 // tieBreaker is of type String -> Long
                 if (!tieBreaker.containsKey(graphiteTarget)) defaultSeconds else min(currentTimestamp - tieBreaker[graphiteTarget]!!, maxSecondsToQuery),
                 GraphiteMetricsTimeSignUnit.minus,
-                GraphiteMetricsTimeUnit.minutes
+                GraphiteMetricsTimeUnit.seconds
             )
         ).until(
             GraphiteMetricsTime(0, GraphiteMetricsTimeSignUnit.minus, GraphiteMetricsTimeUnit.minutes)
