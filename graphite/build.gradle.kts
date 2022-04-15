@@ -15,6 +15,11 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+tasks.withType<Test> {
+    // Enables the search of memory leaks in the Netty buffers when running all tests.
+    systemProperties("io.netty.leakDetectionLevel" to "paranoid")
+}
+
 allOpen {
     annotations(
         "io.micronaut.aop.Around",
@@ -70,6 +75,7 @@ dependencies {
     testImplementation("javax.annotation:javax.annotation-api")
     testImplementation("io.micronaut:micronaut-runtime")
     testImplementation("io.aeris-consulting:catadioptre-kotlin:${catadioptreVersion}")
+    testImplementation("org.awaitility:awaitility-kotlin:4.+")
     testRuntimeOnly("io.qalipsis:runtime:${project.version}")
 
     kaptTest(platform("io.micronaut:micronaut-bom:$micronautVersion"))

@@ -24,17 +24,11 @@ import java.time.Duration
 internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
     @Nested
-    @MicronautTest(startApplication = false, propertySources = ["classpath:application.yml"])
-    inner class NoMicronautGraphiteMeterRegistry : TestPropertyProvider {
+    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
+    inner class NoMicronautGraphiteMeterRegistry {
 
         @Inject
         private lateinit var applicationContext: ApplicationContext
-
-        override fun getProperties(): MutableMap<String, String> {
-            return mutableMapOf(
-                "micronaut.metrics.enabled" to "false"
-            )
-        }
 
         @Test
         @Timeout(10)
@@ -45,7 +39,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
     }
 
     @Nested
-    @MicronautTest(startApplication = false)
+    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
     inner class WithoutMeters : TestPropertyProvider {
 
         @Inject
@@ -53,7 +47,6 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
         override fun getProperties(): MutableMap<String, String> {
             return mutableMapOf(
-                "micronaut.metrics.enabled" to "false",
                 "meters.enabled" to "false",
                 "meters.graphitedb.enabled" to "true",
                 "meters.graphitedb.host" to CONTAINER.host,
@@ -70,7 +63,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
     }
 
     @Nested
-    @MicronautTest(startApplication = false)
+    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
     inner class WithMetersButWithoutGraphite : TestPropertyProvider {
 
         @Inject
@@ -78,7 +71,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
         override fun getProperties(): MutableMap<String, String> {
             return mutableMapOf(
-                "micronaut.metrics.export.graphite.enabled" to "false",
+                "micronaut.metrics.enabled" to "false",
                 "meters.enabled" to "true",
                 "meters.graphitedb.enabled" to "false",
                 "meters.graphitedb.host" to CONTAINER.host,
@@ -95,7 +88,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
     }
 
     @Nested
-    @MicronautTest(startApplication = false)
+    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
     inner class WithGraphiteMeterRegistry : TestPropertyProvider {
 
         @Inject
@@ -103,7 +96,6 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
         override fun getProperties(): MutableMap<String, String> {
             return mutableMapOf(
-                "micronaut.metrics.enabled" to "false",
                 "meters.enabled" to "true",
                 "meters.graphitedb.enabled" to "true",
                 "meters.graphitedb.host" to CONTAINER.host,
