@@ -24,7 +24,8 @@ import javax.validation.constraints.NotNull
 /**
  * Interface to establish a connection with Graphite
  */
-interface GraphiteConnectionSpecification {
+@Spec
+interface GraphiteSaveConnectionSpecification {
     /**
      * Configures the servers settings.
      */
@@ -37,7 +38,7 @@ interface GraphiteConnectionSpecification {
 }
 
 @Spec
-internal class GraphiteConnectionSpecificationImpl : GraphiteConnectionSpecification {
+internal class GraphiteSaveConnectionSpecificationImpl : GraphiteSaveConnectionSpecification {
 
     @field:NotBlank
     var host: String = "localhost"

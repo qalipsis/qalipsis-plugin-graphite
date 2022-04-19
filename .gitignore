@@ -32,6 +32,7 @@ hs_err_pid*
 /build/
 /*/build/
 /*/*/build/
+!/gradle/wrapper/gradle-wrapper.jar
 
 # Intellij
 .idea/**
@@ -40,3 +41,8 @@ hs_err_pid*
 
 # OSX
 .DS_Store
+
+
+/core/docker/kibana/
+/core/docker/elasticsearch/
+

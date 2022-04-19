@@ -66,7 +66,7 @@ internal class GraphiteEventsPublisher(
                 configuration.port,
                 workerGroup,
                 coroutineScope
-            ).start()
+            ).open()
         }
         runBlocking(coroutineScope.coroutineContext) {
             clients.awaitReadiness()

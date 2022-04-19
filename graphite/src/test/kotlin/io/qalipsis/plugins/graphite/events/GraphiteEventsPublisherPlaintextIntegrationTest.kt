@@ -21,5 +21,5 @@ import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
 /**
  * @author rklymenko
  */
-internal class GraphiteEventsPublisherPlaintextIntegrationTest :
-    AbstractGraphiteEventsPublisherIntegrationTest(GraphiteProtocol.PLAINTEXT)
+//internal class GraphiteEventsPublisherPlaintextIntegrationTest :
+//    AbstractGraphiteEventsPublisherIntegrationTest(GraphiteProtocol.PLAINTEXT)

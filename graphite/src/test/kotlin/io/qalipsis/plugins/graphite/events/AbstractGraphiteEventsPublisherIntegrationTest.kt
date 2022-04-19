@@ -57,11 +57,11 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(val proto
 
     private val container = CONTAINER
 
-    private var containerHttpPort = -1
+    private var containerHttpPort = 2006
 
     private val httpClient = createSimpleHttpClient()
 
-    private var protocolPort = -1
+    private var protocolPort = 2006
 
     @BeforeAll
     fun setUp() {
