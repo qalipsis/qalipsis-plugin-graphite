@@ -17,7 +17,6 @@
 package io.qalipsis.plugins.graphite
 
 import io.netty.channel.EventLoopGroup
-import io.netty.channel.nio.NioEventLoopGroup
 import io.qalipsis.api.annotations.Spec
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
@@ -44,9 +43,9 @@ internal class GraphiteConnectionSpecificationImpl : GraphiteConnectionSpecifica
     var host: String = "localhost"
 
     @field:NotNull
-    var port: Int = 2003
+    var port: Int = 8080
 
-    var workerGroup: () -> EventLoopGroup = { NioEventLoopGroup() }
+    lateinit var workerGroup: () -> EventLoopGroup
 
     override fun server(host: String, port: Int) {
         this.host = host

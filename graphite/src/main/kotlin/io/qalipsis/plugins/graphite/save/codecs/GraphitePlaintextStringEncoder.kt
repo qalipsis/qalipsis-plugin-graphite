@@ -25,22 +25,23 @@ import io.qalipsis.plugins.graphite.save.GraphiteRecord
 
 /**
  * Implementation of [MessageToByteEncoder] for [graphite][https://github.com/graphite-project] plaintext string protocol.
- * Receives a list of [String], encodes them to pickle format and then sends it to [ChannelHandlerContext] for further processing.
+ * Receives a list of [GraphiteRecord], encodes them to pickle format and then sends it to [ChannelHandlerContext] for further processing.
+ * Converts Graphite records to plaintext.
  *
  * @author Palina Bril
  */
-internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String>>() {
+internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<GraphiteRecord>>() {
 
     /**
      * Encodes incoming list of [String] to [plaintext][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-plaintext-protocol]
      * Sends encoded messages one by one to [ChannelHandlerContext]
      * Converts Graphite records to plaintext.
      */
-    override fun encode(ctx: ChannelHandlerContext, messages: List<String>, out: ByteBuf) {
+    override fun encode(ctx: ChannelHandlerContext, messages: List<GraphiteRecord>, out: ByteBuf) {
         out.retain()
         log.trace { "Encoding messages: $messages" }
         messages.forEach {
-            out.writeBytes(it.encodeToByteArray())
+            out.writeBytes(convertToPlaintext(it).encodeToByteArray())
         }
         ctx.writeAndFlush(out)
         log.trace { "Messages flushed: $messages" }
@@ -53,7 +54,7 @@ internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String
         payload.append(" ")
         payload.append(record.value)
         payload.append(" ")
-        payload.append(record.timestamp.toEpochMilli() / 1000)
+        payload.append((record.timestamp?.toEpochMilli())?.div(1000))
         payload.append("\n")
         return payload.toString()
     }

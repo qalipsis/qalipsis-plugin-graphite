@@ -27,6 +27,6 @@ package io.qalipsis.plugins.graphite.save
  */
 data class GraphiteSaveResult<I>(
     val input: I,
-    val messages: List<String>,
+    val messages: List<GraphiteRecord>,
     val meters: GraphiteSaveQueryMeters
 )
