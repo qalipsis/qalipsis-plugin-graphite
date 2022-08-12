@@ -10,7 +10,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
 import io.micronaut.core.naming.conventions.StringConvention
 import io.micronaut.core.util.StringUtils
-import io.qalipsis.api.meters.MetersConfig
+import io.qalipsis.api.config.MetersConfig
 import jakarta.inject.Singleton
 import java.util.Properties
 
@@ -21,7 +21,7 @@ import java.util.Properties
  */
 @Factory
 @Requirements(
-    Requires(property = MetersConfig.ENABLED, notEquals = StringUtils.FALSE),
+    Requires(property = MetersConfig.EXPORT_ENABLED, notEquals = StringUtils.FALSE),
     Requires(property = GraphiteMeterRegistryFactory.GRAPHITE_ENABLED, notEquals = StringUtils.FALSE)
 )
 internal class GraphiteMeterRegistryFactory {
@@ -29,11 +29,11 @@ internal class GraphiteMeterRegistryFactory {
     @Singleton
     fun graphiteRegistry(environment: Environment): GraphiteMeterRegistry {
         val properties = Properties()
-        properties.putAll(environment.getProperties(MetersConfig.CONFIGURATION, StringConvention.RAW))
-        properties.putAll(environment.getProperties(MetersConfig.CONFIGURATION, StringConvention.CAMEL_CASE))
+        properties.putAll(environment.getProperties(MetersConfig.EXPORT_CONFIGURATION, StringConvention.RAW))
+        properties.putAll(environment.getProperties(MetersConfig.EXPORT_CONFIGURATION, StringConvention.CAMEL_CASE))
 
         return GraphiteMeterRegistry(object : GraphiteConfig {
-            override fun get(key: String?): String? {
+            override fun get(key: String): String? {
                 return properties.getProperty(key)
             }
 
@@ -43,8 +43,8 @@ internal class GraphiteMeterRegistryFactory {
 
     companion object {
 
-        internal const val GRAPHITE_CONFIGURATION = "${MetersConfig.CONFIGURATION}.graphite"
+        private const val GRAPHITE_CONFIGURATION = "${MetersConfig.EXPORT_CONFIGURATION}.graphite"
 
-        internal const val GRAPHITE_ENABLED = "$GRAPHITE_CONFIGURATION.enabled"
+        const val GRAPHITE_ENABLED = "$GRAPHITE_CONFIGURATION.enabled"
     }
 }

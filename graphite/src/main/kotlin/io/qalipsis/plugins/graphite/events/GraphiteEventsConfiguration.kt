@@ -2,11 +2,10 @@ package io.qalipsis.plugins.graphite.events
 
 import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.Requires
-import io.qalipsis.api.constraints.PositiveDuration
+import io.qalipsis.api.config.EventsConfig
 import io.qalipsis.api.events.EventLevel
 import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
 import java.time.Duration
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Positive
@@ -16,8 +15,8 @@ import javax.validation.constraints.Positive
  *
  * @author rklymenko
  */
-@Requires(property = "events.export.graphite.enabled", value = "true")
-@ConfigurationProperties("events.export.graphite")
+@Requires(property = "${EventsConfig.EXPORT_CONFIGURATION}.graphite.enabled", value = "true")
+@ConfigurationProperties("${EventsConfig.EXPORT_CONFIGURATION}.graphite")
 internal interface GraphiteEventsConfiguration {
     @get:NotNull
     val minLevel: EventLevel

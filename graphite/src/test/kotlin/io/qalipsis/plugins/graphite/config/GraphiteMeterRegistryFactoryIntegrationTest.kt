@@ -13,18 +13,11 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy
-import org.testcontainers.junit.jupiter.Container
-import org.testcontainers.junit.jupiter.Testcontainers
-import org.testcontainers.utility.DockerImageName
-import java.time.Duration
 
-@Testcontainers
 internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
     @Nested
-    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
+    @MicronautTest(startApplication = false, environments = ["graphite"])
     inner class NoMicronautGraphiteMeterRegistry {
 
         @Inject
@@ -38,7 +31,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
     }
 
     @Nested
-    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
+    @MicronautTest(startApplication = false, environments = ["graphite"])
     inner class WithoutMeters : TestPropertyProvider {
 
         @Inject
@@ -46,10 +39,8 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
         override fun getProperties(): MutableMap<String, String> {
             return mutableMapOf(
-                "meters.enabled" to "false",
-                "meters.graphite.enabled" to "true",
-                "meters.graphite.host" to CONTAINER.host,
-                "meters.graphite.port" to CONTAINER.getMappedPort(HTTP_PORT).toString()
+                "meters.export.enabled" to "false",
+                "meters.export.graphite.enabled" to "true"
             )
         }
 
@@ -61,7 +52,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
     }
 
     @Nested
-    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
+    @MicronautTest(startApplication = false, environments = ["graphite"])
     inner class WithMetersButWithoutGraphite : TestPropertyProvider {
 
         @Inject
@@ -69,11 +60,8 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
         override fun getProperties(): MutableMap<String, String> {
             return mutableMapOf(
-                "micronaut.metrics.enabled" to "false",
-                "meters.enabled" to "true",
-                "meters.graphite.enabled" to "false",
-                "meters.graphite.host" to CONTAINER.host,
-                "meters.graphite.port" to CONTAINER.getMappedPort(HTTP_PORT).toString()
+                "meters.export.enabled" to "true",
+                "meters.export.graphite.enabled" to "false"
             )
         }
 
@@ -86,7 +74,7 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
     }
 
     @Nested
-    @MicronautTest(startApplication = false, propertySources = ["classpath:application-graphite.yml"])
+    @MicronautTest(startApplication = false, environments = ["graphite"])
     inner class WithGraphiteMeterRegistry : TestPropertyProvider {
 
         @Inject
@@ -94,10 +82,8 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
 
         override fun getProperties(): MutableMap<String, String> {
             return mutableMapOf(
-                "meters.enabled" to "true",
-                "meters.graphite.enabled" to "true",
-                "meters.graphite.host" to CONTAINER.host,
-                "meters.graphite.port" to CONTAINER.getMappedPort(HTTP_PORT).toString()
+                "meters.export.enabled" to "true",
+                "meters.export.graphite.enabled" to "true"
             )
         }
 
@@ -109,23 +95,4 @@ internal class GraphiteMeterRegistryFactoryIntegrationTest {
         }
     }
 
-    companion object {
-
-        const val GRAPHITE_IMAGE_NAME = "graphiteapp/graphite-statsd:latest"
-        const val HTTP_PORT = 80
-        const val GRAPHITE_PLAINTEXT_PORT = 2003
-        const val GRAPHITE_PICKLE_PORT = 2004
-
-        @Container
-        @JvmStatic
-        private val CONTAINER = GenericContainer<Nothing>(
-            DockerImageName.parse(GRAPHITE_IMAGE_NAME)
-        ).apply {
-            setWaitStrategy(HostPortWaitStrategy())
-            withExposedPorts(HTTP_PORT, GRAPHITE_PLAINTEXT_PORT, GRAPHITE_PICKLE_PORT)
-            withAccessToHost(true)
-            withStartupTimeout(Duration.ofSeconds(60))
-            withCreateContainerCmdModifier { it.hostConfig!!.withMemory((512 * 1e20).toLong()).withCpuCount(2) }
-        }
-    }
 }
