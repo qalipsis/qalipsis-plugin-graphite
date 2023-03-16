@@ -19,6 +19,8 @@ package io.qalipsis.plugins.graphite.config
 import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
+import assertk.assertions.isNotEmpty
+import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.graphite.GraphiteMeterRegistry
 import io.micronaut.context.ApplicationContext
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest

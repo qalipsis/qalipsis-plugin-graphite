@@ -66,6 +66,9 @@ dependencies {
     implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
     implementation("io.netty:netty-buffer")
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-graphite")
+    implementation("io.ktor:ktor-client-cio:2.2.4")
+    implementation("io.ktor:ktor-client-core:2.2.4")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     kapt(platform("io.qalipsis:plugin-platform:${pluginPlatformVersion}"))
     kapt("io.qalipsis:api-processors")

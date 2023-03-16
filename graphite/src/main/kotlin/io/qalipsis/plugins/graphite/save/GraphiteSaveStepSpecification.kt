@@ -69,7 +69,7 @@ internal class GraphiteSaveStepSpecificationImpl<I> :
     internal var monitoringConfig = StepMonitoringConfiguration()
 
     override fun connect(connectionConfiguration: GraphiteConnectionSpecification.() -> Unit) {
-        connectionConfig.connectionConfiguration();
+        connectionConfig.connectionConfiguration()
     }
 
     override fun records(recordsFactory: suspend (ctx: StepContext<*, *>, input: I) -> List<String>) {
