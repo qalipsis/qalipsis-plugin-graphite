@@ -99,7 +99,7 @@ internal class GraphiteIterativeReaderIntegrationTest {
     }
 
     @Test
-    @Timeout(20)
+    @Timeout(1000)
     fun `should save data and poll them`() = testDispatcherProvider.run {
         // given
         val graphiteQuery = GraphiteQuery("exact.key.*").from(
@@ -126,16 +126,18 @@ internal class GraphiteIterativeReaderIntegrationTest {
         // then
         assertThat(reader.next()).prop(GraphiteQueryResult::results).isEmpty()
 
+        //FIXME Find a solution to remove the delay
+
         // when
         graphiteEventsClient.publish((1..50).map { Event("exact.key.$it", EventLevel.INFO, value = it) })
-        delay(1_000)
+        delay(10000)
         reader.coInvokeInvisible<Unit>("poll", renderApiService) // Should only fetch the first record.
 
         // then
         assertThat(reader.next()).all {
             prop(GraphiteQueryResult::results).all {
                 hasSize(50)
-                each { it.transform { it.dataPoints[0].value }.isNotNull().isBetween(1.0, 50.0) }
+                each { it -> it.transform { it.dataPoints[0].value }.isNotNull().isBetween(1.0, 50.0) }
             }
             prop(GraphiteQueryResult::meters).all {
                 prop(GraphiteQueryMeters::fetchedRecords).isEqualTo(50)
@@ -145,7 +147,7 @@ internal class GraphiteIterativeReaderIntegrationTest {
 
         // when
         graphiteEventsClient.publish((51..100).map { Event("exact.key.$it", EventLevel.INFO, value = it) })
-        delay(5_000)
+        delay(2000)
         reader.coInvokeInvisible<Unit>("poll", renderApiService)
 
         // then

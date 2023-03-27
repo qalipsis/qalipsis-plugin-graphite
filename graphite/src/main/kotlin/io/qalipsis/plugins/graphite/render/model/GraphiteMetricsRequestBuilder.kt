@@ -14,7 +14,7 @@ internal data class GraphiteMetricsRequestBuilder(
     private var format: GraphiteRenderFormat = GraphiteRenderFormat.JSON,
 ) {
 
-    constructor(query: GraphiteQuery) : this(
+        constructor(query: GraphiteQuery) : this(
         target = query.target,
         from = query.from,
         aggregateFunction = query.aggregateFunction

@@ -2,11 +2,11 @@ package io.qalipsis.plugins.graphite.poll
 
 import io.aerisconsulting.catadioptre.KTestable
 import io.micrometer.core.instrument.Counter
-import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import io.qalipsis.api.context.StepStartStopContext
 import io.qalipsis.api.events.EventsLogger
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.api.meters.CampaignMeterRegistry
 import io.qalipsis.api.steps.datasource.DatasourceIterativeReader
 import io.qalipsis.plugins.graphite.render.service.GraphiteRenderApiService
 import kotlinx.coroutines.CancellationException
@@ -39,7 +39,7 @@ internal class GraphiteIterativeReader(
     private val pollDelay: Duration,
     private val resultsChannelFactory: () -> Channel<GraphiteQueryResult> = { Channel(Channel.UNLIMITED) },
     private val eventsLogger: EventsLogger?,
-    private val meterRegistry: MeterRegistry?
+    private val meterRegistry: CampaignMeterRegistry?
 ) : DatasourceIterativeReader<GraphiteQueryResult> {
 
     private val eventPrefix = "graphite.poll"

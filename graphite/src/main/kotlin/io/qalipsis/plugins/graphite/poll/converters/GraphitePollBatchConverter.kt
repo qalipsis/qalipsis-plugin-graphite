@@ -13,8 +13,7 @@ import java.util.concurrent.atomic.AtomicLong
  *
  * @author Teyyihan Aksu
  */
-internal class GraphitePollBatchConverter(
-) : DatasourceObjectConverter<GraphiteQueryResult, GraphitePollResult> {
+internal class GraphitePollBatchConverter : DatasourceObjectConverter<GraphiteQueryResult, GraphitePollResult> {
 
     override suspend fun supply(
         offset: AtomicLong,

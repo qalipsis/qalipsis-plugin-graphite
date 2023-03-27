@@ -14,7 +14,7 @@ import jakarta.inject.Singleton
 /**
  * TODO The configuration of the service should be simpler and support any root URL (with/without https, path prefix...)
  * Pass the URL as constructor.
- * Path optional username / password in an "Authentication" object in the contructor.
+ * Path optional username / password in an "Authentication" object in the constructor.
  *
  *  The class GraphiteRenderApiConfiguration is to remove.
  *

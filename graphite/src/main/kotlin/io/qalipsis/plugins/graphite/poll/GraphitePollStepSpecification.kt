@@ -90,7 +90,7 @@ internal class GraphitePollStepSpecificationImpl :
 }
 
 /**
- * Creates a Graphite poll step in order to periodically fetch data from an Graphite server.
+ * Creates a Graphite poll step in order to periodically fetch data from a Graphite server.
  *
  * This step is generally used in conjunction with a left join to assert data or inject them in a workflow.
  *

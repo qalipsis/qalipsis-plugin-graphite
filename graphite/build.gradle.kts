@@ -53,6 +53,7 @@ kotlin.sourceSets["test"].kotlin.srcDir("build/generated/source/kaptKotlin/catad
 kapt.useBuildCache = false
 
 val pluginPlatformVersion: String by project
+val ktorVersion = "2.2.4"
 
 dependencies {
     implementation(platform("io.qalipsis:plugin-platform:${pluginPlatformVersion}"))
@@ -66,8 +67,8 @@ dependencies {
     implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
     implementation("io.netty:netty-buffer")
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-graphite")
-    implementation("io.ktor:ktor-client-cio:2.2.4")
-    implementation("io.ktor:ktor-client-core:2.2.4")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     kapt(platform("io.qalipsis:plugin-platform:${pluginPlatformVersion}"))
