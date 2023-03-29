@@ -24,8 +24,7 @@ import io.netty.channel.ChannelHandlerContext
 import io.qalipsis.api.events.Event
 import io.qalipsis.api.events.EventLevel
 import io.qalipsis.api.events.EventTag
-import io.qalipsis.plugins.graphite.events.codecs.catadioptre.convertToPlaintext
-import io.qalipsis.plugins.graphite.events.codecs.catadioptre.encode
+import io.qalipsis.plugins.graphite.poll.model.events.codecs.GraphitePlaintextEncoder
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.coVerifyOnce
 import org.junit.jupiter.api.Assertions

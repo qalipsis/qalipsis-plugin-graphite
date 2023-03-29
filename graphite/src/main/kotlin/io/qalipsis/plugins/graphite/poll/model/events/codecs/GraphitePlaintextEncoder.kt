@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package io.qalipsis.plugins.graphite.events.codecs
+package io.qalipsis.plugins.graphite.poll.model.events.codecs
 
 import io.aerisconsulting.catadioptre.KTestable
 import io.netty.buffer.ByteBuf
@@ -36,7 +36,7 @@ internal class GraphitePlaintextEncoder : MessageToByteEncoder<List<Event>>() {
      * Sends encoded messages one by one to [ChannelHandlerContext]
      */
     @KTestable
-    override fun encode(
+    public override fun encode(
         ctx: ChannelHandlerContext,
         events: List<Event>, out: ByteBuf
     ) {
@@ -58,7 +58,7 @@ internal class GraphitePlaintextEncoder : MessageToByteEncoder<List<Event>>() {
      * Receives an [Event] and encodes it to [plaintext][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-plaintext-protocol]
      */
     @KTestable
-    private fun convertToPlaintext(event: Event): String {
+    fun convertToPlaintext(event: Event): String {
         val payload = StringBuilder()
         payload.append(event.name)
         for (tag in event.tags) {
