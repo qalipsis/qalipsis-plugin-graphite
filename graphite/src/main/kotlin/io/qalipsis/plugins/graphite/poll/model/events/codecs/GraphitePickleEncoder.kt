@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package io.qalipsis.plugins.graphite.events.codecs
+package io.qalipsis.plugins.graphite.poll.model.events.codecs
 
 import io.aerisconsulting.catadioptre.KTestable
 import io.netty.buffer.ByteBuf
@@ -37,7 +37,7 @@ internal class GraphitePickleEncoder : MessageToByteEncoder<List<Event>>() {
      * Sends encoded message to [ChannelHandlerContext]
      */
     @KTestable
-    override fun encode(
+    public override fun encode(
         ctx: ChannelHandlerContext,
         events: List<Event>, out: ByteBuf
     ) {
@@ -69,7 +69,7 @@ internal class GraphitePickleEncoder : MessageToByteEncoder<List<Event>>() {
      * Receives a list of [Event] and encodes it to [pickle][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-pickle-protocol]
      */
     @KTestable
-    private fun convertToPickle(events: List<Event>): String {
+    fun convertToPickle(events: List<Event>): String {
         val payload = StringBuilder()
         payload.append(MARK)
         payload.append(LIST)

@@ -1,4 +1,4 @@
-package io.qalipsis.plugins.graphite.events.model
+package io.qalipsis.plugins.graphite.poll.model.events.model
 
 /**
  * Enumerates supported [graphite][https://github.com/graphite-project] transport protocols.

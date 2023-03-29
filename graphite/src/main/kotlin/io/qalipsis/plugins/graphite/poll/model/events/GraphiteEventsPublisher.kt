@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package io.qalipsis.plugins.graphite.events
+package io.qalipsis.plugins.graphite.poll.model.events
 
 import io.micronaut.context.annotation.Requires
 import io.netty.channel.EventLoopGroup

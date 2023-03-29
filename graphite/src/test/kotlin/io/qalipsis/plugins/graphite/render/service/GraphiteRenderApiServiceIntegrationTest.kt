@@ -16,8 +16,8 @@ import io.ktor.http.HttpStatusCode
 import io.netty.channel.nio.NioEventLoopGroup
 import io.qalipsis.api.events.Event
 import io.qalipsis.api.events.EventLevel
-import io.qalipsis.plugins.graphite.events.GraphiteEventsClient
-import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
+import io.qalipsis.plugins.graphite.poll.model.events.GraphiteEventsClient
+import io.qalipsis.plugins.graphite.poll.model.events.model.GraphiteProtocol
 import io.qalipsis.plugins.graphite.render.model.GraphiteMetricsRequestBuilder
 import io.qalipsis.plugins.graphite.render.model.GraphiteMetricsTime
 import io.qalipsis.plugins.graphite.render.model.GraphiteMetricsTimeSignUnit
@@ -63,7 +63,7 @@ internal class GraphiteRenderApiServiceIntegrationTest {
     private lateinit var renderApiService: GraphiteRenderApiService
 
     @BeforeAll
-    @Timeout(5)
+    @Timeout(25)
     fun setUpAll() = testDispatcherProvider.run {
         val serverUrl = "http://localhost:${CONTAINER.getMappedPort(HTTP_PORT)}"
         while (httpClient.get("${serverUrl}/render").status != HttpStatusCode.OK) {

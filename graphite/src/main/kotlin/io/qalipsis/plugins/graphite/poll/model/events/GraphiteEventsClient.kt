@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package io.qalipsis.plugins.graphite.events
+package io.qalipsis.plugins.graphite.poll.model.events
 
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.Channel
@@ -28,9 +28,9 @@ import io.qalipsis.api.events.Event
 import io.qalipsis.api.io.Closeable
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.sync.ImmutableSlot
-import io.qalipsis.plugins.graphite.events.codecs.GraphitePickleEncoder
-import io.qalipsis.plugins.graphite.events.codecs.GraphitePlaintextEncoder
-import io.qalipsis.plugins.graphite.events.model.GraphiteProtocol
+import io.qalipsis.plugins.graphite.poll.model.events.codecs.GraphitePickleEncoder
+import io.qalipsis.plugins.graphite.poll.model.events.codecs.GraphitePlaintextEncoder
+import io.qalipsis.plugins.graphite.poll.model.events.model.GraphiteProtocol
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking

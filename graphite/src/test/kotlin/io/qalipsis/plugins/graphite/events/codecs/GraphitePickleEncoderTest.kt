@@ -24,8 +24,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.qalipsis.api.events.Event
 import io.qalipsis.api.events.EventLevel
-import io.qalipsis.plugins.graphite.events.codecs.catadioptre.convertToPickle
-import io.qalipsis.plugins.graphite.events.codecs.catadioptre.encode
+import io.qalipsis.plugins.graphite.poll.model.events.codecs.GraphitePickleEncoder
 import io.qalipsis.test.mockk.WithMockk
 import io.qalipsis.test.mockk.coVerifyOnce
 import org.junit.jupiter.api.Assertions
@@ -91,7 +90,7 @@ internal class GraphitePickleEncoderTest {
         //given
         val graphitePickleEncoder = GraphitePickleEncoder()
         val events = listOf(Event("boo", EventLevel.DEBUG, timestamp = Instant.ofEpochMilli(0L)))
-        val payload = (graphitePickleEncoder.convertToPickle(events) as String).encodeToByteArray()
+        val payload = graphitePickleEncoder.convertToPickle(events).encodeToByteArray()
         val header = ByteBuffer.allocate(4).putInt(payload.size).array()
         val expectedEvent = header + payload
 
@@ -110,7 +109,7 @@ internal class GraphitePickleEncoderTest {
             Event("boo", EventLevel.DEBUG, timestamp = Instant.ofEpochMilli(0L)),
             Event("boo2", EventLevel.DEBUG, timestamp = Instant.ofEpochMilli(0L))
         )
-        val payload = (graphitePickleEncoder.convertToPickle(events) as String).encodeToByteArray()
+        val payload = graphitePickleEncoder.convertToPickle(events).encodeToByteArray()
         val header = ByteBuffer.allocate(4).putInt(payload.size).array()
         val expectedEvent = header + payload
 
@@ -129,7 +128,7 @@ internal class GraphitePickleEncoderTest {
             Event("boo", EventLevel.DEBUG, timestamp = Instant.ofEpochMilli(0L)),
             Event("boo2", EventLevel.DEBUG, timestamp = Instant.ofEpochMilli(0L))
         )
-        val payload = (graphitePickleEncoder.convertToPickle(events) as String).encodeToByteArray()
+        val payload = graphitePickleEncoder.convertToPickle(events).encodeToByteArray()
         val header = ByteBuffer.allocate(4).putInt(payload.size).array()
         val expectedEvents = header + payload
 

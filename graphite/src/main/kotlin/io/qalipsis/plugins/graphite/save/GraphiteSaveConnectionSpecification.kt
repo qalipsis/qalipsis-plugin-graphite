@@ -14,7 +14,7 @@
  * permissions and limitations under the License.
  */
 
-package io.qalipsis.plugins.graphite
+package io.qalipsis.plugins.graphite.save
 
 import io.netty.channel.EventLoopGroup
 import io.qalipsis.api.annotations.Spec
