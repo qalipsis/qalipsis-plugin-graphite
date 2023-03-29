@@ -112,9 +112,9 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-//    signing {
-//        publishing.publications.forEach { sign(it) }
-//    }
+    signing {
+        publishing.publications.forEach { sign(it) }
+    }
 
     val ossrhUsername: String? by project
     val ossrhPassword: String? by project
