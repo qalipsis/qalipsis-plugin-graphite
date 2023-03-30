@@ -17,6 +17,8 @@
 rootProject.name = "qalipsis-plugins-graphite"
 
 include(
-    "graphite"
+    "qalipsis-plugin-graphite"
 )
+
+project(":qalipsis-plugin-graphite").projectDir = File(rootDir, "graphite")
 
