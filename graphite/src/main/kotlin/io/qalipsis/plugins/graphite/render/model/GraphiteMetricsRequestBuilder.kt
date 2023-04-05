@@ -1,8 +1,33 @@
+/*
+ * Copyright 2022 AERIS IT Solutions GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package io.qalipsis.plugins.graphite.render.model
 
 import io.qalipsis.plugins.graphite.poll.model.GraphiteQuery
 
 /**
+ * A request builder for specifying poll request more explicitly.
+ *
+ * @property target specifies a path identifying one or several metrics
+ * @property from specifies the beginning of the relative or absolute time period to graph
+ * @property until specifies the end of the relative or absolute time period to graph
+ * @property noNullPoints if set and combined with [JSON] format, removes all null datapoints from the series returned
+ * @property aggregateFunction specifies an aggregate function name
+ * @property format specifies the format of series returned
+ *
  * @author rklymenko
  */
 internal data class GraphiteMetricsRequestBuilder(
@@ -11,7 +36,7 @@ internal data class GraphiteMetricsRequestBuilder(
     private var until: String = "",
     private var noNullPoints: String = "True",
     private var aggregateFunction: GraphiteRenderAggregationFuncName = GraphiteRenderAggregationFuncName.NONE,
-    private var format: GraphiteRenderFormat = GraphiteRenderFormat.JSON,
+    private var format: GraphiteRenderFormat = GraphiteRenderFormat.JSON
 ) {
 
         constructor(query: GraphiteQuery) : this(
@@ -91,13 +116,11 @@ data class GraphiteMetricsTime(
     val sign: GraphiteMetricsTimeSignUnit,
     val unit: GraphiteMetricsTimeUnit
 ) {
-    fun toQueryString() = "${sign}$amount${unit.getGraphiteTimeUnitCode()}"
+    fun toQueryString() = "${sign.sign}$amount${unit.getGraphiteTimeUnitCode()}"
 }
 
-enum class GraphiteMetricsTimeSignUnit {
-    MINUS, PLUS;
-
-    override fun toString() = if (this == MINUS) "-" else "+"
+enum class GraphiteMetricsTimeSignUnit(val sign : String)  {
+    MINUS("-"), PLUS("+");
 }
 
 enum class GraphiteMetricsTimeUnit {

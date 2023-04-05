@@ -1,3 +1,19 @@
+/*
+ * Copyright 2022 AERIS IT Solutions GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
 package io.qalipsis.plugins.graphite.render.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -12,11 +28,12 @@ import io.qalipsis.plugins.graphite.render.model.GraphiteRenderFormat
 import jakarta.inject.Singleton
 
 /**
- * TODO The configuration of the service should be simpler and support any root URL (with/without https, path prefix...)
- * Pass the URL as constructor.
- * Path optional username / password in an "Authentication" object in the constructor.
+ * Graphite render api service to get response from server and map it as [GraphiteRenderApiJsonResponse].
  *
- *  The class GraphiteRenderApiConfiguration is to remove.
+ * @property serverUrl of a server from where the response is received
+ * @property objectMapper to map values from JSON to the list of [GraphiteRenderApiJsonResponse]
+ * @property httpClient to perform a GET request
+ * @property baseAuth parameters to authenticate when performing GET request
  *
  * @author rklymenko
  */

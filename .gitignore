@@ -41,8 +41,3 @@ hs_err_pid*
 
 # OSX
 .DS_Store
-
-
-/core/docker/kibana/
-/core/docker/elasticsearch/
-

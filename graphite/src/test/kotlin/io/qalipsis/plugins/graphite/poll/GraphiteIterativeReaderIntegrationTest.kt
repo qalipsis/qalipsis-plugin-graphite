@@ -126,10 +126,13 @@ internal class GraphiteIterativeReaderIntegrationTest {
         // then
         assertThat(reader.next()).prop(GraphiteQueryResult::results).isEmpty()
 
-        //FIXME Find a solution to remove the delay
+
 
         // when
         graphiteEventsClient.publish((1..50).map { Event("exact.key.$it", EventLevel.INFO, value = it) })
+        //FIXME Find a solution to remove the delay
+        //Here is a part of graphite documentation, describing the timestamp:
+        //https://graphite.readthedocs.io/en/latest/terminology.html
         delay(10000)
         reader.coInvokeInvisible<Unit>("poll", renderApiService) // Should only fetch the first record.
 
