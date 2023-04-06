@@ -67,7 +67,6 @@ dependencies {
     implementation(group = "io.netty", name = "netty-transport-native-kqueue", classifier = "osx-x86_64")
     implementation("io.netty:netty-buffer")
     implementation("io.micronaut.micrometer:micronaut-micrometer-registry-graphite")
-    //FIXME: allow licenses for the ktor
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
