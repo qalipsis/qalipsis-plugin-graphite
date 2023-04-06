@@ -126,6 +126,10 @@
     {
       "moduleLicense": ".*",
       "moduleName": "software.amazon.awssdk:bom"
+    },
+    {
+      "moduleLicense": ".*",
+      "moduleName": "io.ktor.*"
     }
   ]
 }
