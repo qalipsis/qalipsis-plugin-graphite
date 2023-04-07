@@ -16,10 +16,12 @@
 
 package io.qalipsis.plugins.graphite.save.codecs
 
+import io.aerisconsulting.catadioptre.KTestable
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.MessageToByteEncoder
 import io.qalipsis.api.logging.LoggerHelper.logger
+import io.qalipsis.plugins.graphite.save.GraphiteRecord
 
 /**
  * Implementation of [MessageToByteEncoder] for [graphite][https://github.com/graphite-project] plaintext string protocol.
@@ -32,6 +34,7 @@ internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String
     /**
      * Encodes incoming list of [String] to [plaintext][https://graphite.readthedocs.io/en/latest/feeding-carbon.html#the-plaintext-protocol]
      * Sends encoded messages one by one to [ChannelHandlerContext]
+     * Converts Graphite records to plaintext.
      */
     override fun encode(ctx: ChannelHandlerContext, messages: List<String>, out: ByteBuf) {
         out.retain()
@@ -41,6 +44,18 @@ internal class GraphitePlaintextStringEncoder : MessageToByteEncoder<List<String
         }
         ctx.writeAndFlush(out)
         log.trace { "Messages flushed: $messages" }
+    }
+
+    @KTestable
+    fun convertToPlaintext(record: GraphiteRecord): String {
+        val payload = StringBuilder()
+        payload.append(record.metricPath)
+        payload.append(" ")
+        payload.append(record.value)
+        payload.append(" ")
+        payload.append(record.timestamp.toEpochMilli() / 1000)
+        payload.append("\n")
+        return payload.toString()
     }
 
     companion object {
