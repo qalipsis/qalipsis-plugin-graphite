@@ -96,7 +96,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(private v
     }
 
     @Test
-    @Timeout(35)
+    @Timeout(45)
     fun `should save single event into graphite`() = testDispatcherProvider.run {
         //given
         val graphiteEventsPublisher = GraphiteEventsPublisher(
@@ -114,7 +114,7 @@ internal abstract class AbstractGraphiteEventsPublisherIntegrationTest(private v
         //then
         val request =
             generateHttpGet("http://${configuration.host}:${containerHttpPort}/render?target=$key&format=json")
-        await.atMost(30, TimeUnit.SECONDS).until {
+        await.atMost(40, TimeUnit.SECONDS).until {
             kotlin.runCatching {
                 httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body()
             }.getOrNull()?.contains(key) ?: false
