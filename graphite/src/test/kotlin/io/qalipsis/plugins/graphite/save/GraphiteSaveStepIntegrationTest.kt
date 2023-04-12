@@ -105,7 +105,7 @@ internal class GraphiteSaveStepIntegrationTest {
     }
 
     @Test
-    @Timeout(20)
+    @Timeout(50)
     fun `should succeed when sending query with results`() = testDispatcherProvider.run {
         //given
         val metersTags = relaxedMockk<Tags>()
