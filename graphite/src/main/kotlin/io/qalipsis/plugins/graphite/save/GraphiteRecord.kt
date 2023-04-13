@@ -29,9 +29,9 @@ import java.time.Instant
  * @author Alexey Prudnikov
  */
 data class GraphiteRecord (
-    val metricPath: String? = null,
+    val metricPath: String,
     val value: Any? = null,
-    val timestamp: Instant
+    val timestamp: Instant? = null
 ){
     override fun toString(): String {
         return GraphitePlaintextStringEncoder().convertToPlaintext(this)
