@@ -21,6 +21,7 @@ import io.qalipsis.api.constraints.PositiveDuration
 import io.qalipsis.api.scenario.StepSpecificationRegistry
 import io.qalipsis.api.steps.AbstractStepSpecification
 import io.qalipsis.api.steps.BroadcastSpecification
+import io.qalipsis.api.steps.ConfigurableStepSpecification
 import io.qalipsis.api.steps.LoopableSpecification
 import io.qalipsis.api.steps.SingletonConfiguration
 import io.qalipsis.api.steps.SingletonType
@@ -31,6 +32,7 @@ import io.qalipsis.plugins.graphite.GraphiteScenarioSpecification
 import io.qalipsis.plugins.graphite.GraphiteStepSpecification
 import io.qalipsis.plugins.graphite.poll.model.GraphiteQuery
 import io.qalipsis.plugins.graphite.render.GraphiteSearchConnectionSpecification
+import io.qalipsis.plugins.graphite.render.model.GraphiteRenderApiJsonResponse
 import java.time.Duration
 import javax.validation.constraints.NotNull
 
@@ -41,14 +43,14 @@ import javax.validation.constraints.NotNull
  */
 @Spec
 interface GraphitePollStepSpecification :
-    StepSpecification<Unit, GraphitePollResult, GraphitePollStepSpecification>,
-    GraphiteStepSpecification<Unit, GraphitePollResult, GraphitePollStepSpecification>,
+    StepSpecification<Unit, GraphitePollResults, GraphitePollStepSpecification>,
+    GraphiteStepSpecification<Unit, GraphitePollResults, GraphitePollStepSpecification>,
+    ConfigurableStepSpecification<Unit, GraphitePollResults, GraphitePollStepSpecification>,
     LoopableSpecification, UnicastSpecification, BroadcastSpecification {
 
     /**
      * Configures the connection to the Graphite Server.
      */
-    // Implement GraphiteSearchConnectionSpecification into a concrete class.
     fun connect(connection: GraphiteSearchConnectionSpecification.() -> Unit) //this should be affected
 
     /**
@@ -68,12 +70,13 @@ interface GraphitePollStepSpecification :
      */
     fun monitoring(monitoring: StepMonitoringConfiguration.() -> Unit)
 
+    fun flatten(): StepSpecification<Unit, GraphiteRenderApiJsonResponse, *>
 }
 
 @Spec
 internal class GraphitePollStepSpecificationImpl :
-    AbstractStepSpecification<Unit, GraphitePollResult, GraphitePollStepSpecification>(),
-    GraphitePollStepSpecification {
+    AbstractStepSpecification<Unit, GraphitePollResults, GraphitePollStepSpecification>(),
+    GraphitePollStepSpecification{
 
     override val singletonConfiguration: SingletonConfiguration = SingletonConfiguration(SingletonType.UNICAST)
 
@@ -88,6 +91,7 @@ internal class GraphitePollStepSpecificationImpl :
     @field:PositiveDuration
     internal var pollPeriod: Duration = Duration.ofSeconds(10L)
 
+    internal var flattenOutput = false
     override fun connect(connection: GraphiteSearchConnectionSpecification.() -> Unit) {
         this.connectionConfiguration .connection()
     }
@@ -102,6 +106,13 @@ internal class GraphitePollStepSpecificationImpl :
 
     override fun monitoring(monitoring: StepMonitoringConfiguration.() -> Unit) {
         monitoringConfiguration.monitoring()
+    }
+
+    override fun flatten(): StepSpecification<Unit, GraphiteRenderApiJsonResponse, *> {
+        flattenOutput = true
+
+        @Suppress("UNCHECKED_CAST")
+        return this as StepSpecification<Unit, GraphiteRenderApiJsonResponse, *>
     }
 }
 

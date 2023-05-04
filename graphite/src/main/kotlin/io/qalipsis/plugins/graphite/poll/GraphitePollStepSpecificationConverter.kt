@@ -31,6 +31,7 @@ import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
 import io.qalipsis.api.steps.datasource.IterativeDatasourceStep
 import io.qalipsis.api.steps.datasource.processors.NoopDatasourceObjectProcessor
 import io.qalipsis.plugins.graphite.poll.converters.GraphitePollBatchConverter
+import io.qalipsis.plugins.graphite.poll.converters.GraphitePollSingleConverter
 import io.qalipsis.plugins.graphite.render.service.GraphiteRenderApiService
 import jakarta.inject.Named
 import kotlinx.coroutines.CoroutineScope
@@ -73,7 +74,7 @@ internal class GraphitePollStepSpecificationConverter(
             meterRegistry = supplyIf(spec.monitoringConfiguration.meters) { meterRegistry }
         )
 
-        val converter = buildConverter()
+        val converter = buildConverter(spec)
 
         val step = IterativeDatasourceStep(
             stepId,
@@ -84,8 +85,12 @@ internal class GraphitePollStepSpecificationConverter(
         creationContext.createdStep(step)
     }
 
-    private fun buildConverter(): DatasourceObjectConverter<GraphiteQueryResult, out Any> {
-        return GraphitePollBatchConverter()
+    private fun buildConverter(spec: GraphitePollStepSpecificationImpl): DatasourceObjectConverter<GraphiteQueryResult, out Any> {
+        return if (spec.flattenOutput) {
+            GraphitePollSingleConverter()
+        } else {
+            GraphitePollBatchConverter()
+        }
     }
 
 }

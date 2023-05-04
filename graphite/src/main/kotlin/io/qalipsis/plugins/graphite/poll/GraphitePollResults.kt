@@ -26,7 +26,7 @@ import io.qalipsis.plugins.graphite.render.model.GraphiteRenderApiJsonResponse
  *
  * @author Teyyihan Aksu
  */
-class GraphitePollResult(
+class GraphitePollResults(
     val results: List<GraphiteRenderApiJsonResponse>,
     val meters: GraphiteQueryMeters
 ): Iterable<GraphiteRenderApiJsonResponse> {

@@ -20,29 +20,26 @@ import io.qalipsis.api.context.StepOutput
 import io.qalipsis.api.lang.tryAndLogOrNull
 import io.qalipsis.api.logging.LoggerHelper.logger
 import io.qalipsis.api.steps.datasource.DatasourceObjectConverter
-import io.qalipsis.plugins.graphite.poll.GraphitePollResults
 import io.qalipsis.plugins.graphite.poll.GraphiteQueryResult
+import io.qalipsis.plugins.graphite.render.model.GraphiteRenderApiJsonResponse
 import java.util.concurrent.atomic.AtomicLong
 
 /**
- * Implementation of [DatasourceObjectConverter], that reads a batch of Graphite result
+ * Implementation of [DatasourceObjectConverter], to send individual records to the output.
  *
  * @author Teyyihan Aksu
  */
-internal class GraphitePollBatchConverter : DatasourceObjectConverter<GraphiteQueryResult, GraphitePollResults> {
+internal class GraphitePollSingleConverter : DatasourceObjectConverter<GraphiteQueryResult, GraphiteRenderApiJsonResponse> {
 
     override suspend fun supply(
         offset: AtomicLong,
         value: GraphiteQueryResult,
-        output: StepOutput<GraphitePollResults>
+        output: StepOutput<GraphiteRenderApiJsonResponse>
     ) {
-        tryAndLogOrNull(log) {
-            output.send(
-                GraphitePollResults(
-                    results = value.results,
-                    meters = value.meters
-                )
-            )
+        value.results.forEach {
+            tryAndLogOrNull(log) {
+                output.send(it)
+            }
         }
     }
 
