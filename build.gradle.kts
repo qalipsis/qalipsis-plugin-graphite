@@ -112,8 +112,11 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    signing {
-        publishing.publications.forEach { sign(it) }
+    val signingKeyId = "signing.keyId"
+    if (System.getProperty(signingKeyId) != null || System.getenv(signingKeyId) != null) {
+        signing {
+            publishing.publications.forEach { sign(it) }
+        }
     }
 
     val ossrhUsername: String? by project
